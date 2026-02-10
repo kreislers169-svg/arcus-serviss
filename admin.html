@@ -2,231 +2,242 @@
 <html lang="lv">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARCUS ADMIN | Kanban Vadība</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ARCUS ADMIN | Vadība</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        .kanban-col { min-height: 75vh; transition: background-color 0.3s; }
-        .sortable-ghost { opacity: 0.3; background: #fee2e2; border: 2px dashed #ef4444; }
-        .kanban-container::-webkit-scrollbar { height: 8px; }
-        .kanban-container::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
-		
-		/* --- ADMIN PANELIS MOBILAJĀM IERĪCĒM --- */
-@media screen and (max-width: 768px) {
-    /* Kanban dēlis vairs nav horizontāls, bet kolonnas iet viena zem otras */
-    .kanban-board {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        padding: 10px;
-    }
+        /* Uzlabots Kanban izskats */
+        .kanban-col { 
+            min-height: 200px; 
+            transition: all 0.3s ease; 
+        }
+        
+        .sortable-ghost { 
+            opacity: 0.4; 
+            transform: scale(0.95);
+            background: #fecaca !important; 
+            border: 2px dashed #dc2626 !important; 
+        }
 
-    /* Katra kolonna aizņem pilnu ekrāna platumu */
-    .kanban-column {
-        width: 100% !important;
-        min-height: 150px;
-    }
+        /* Skritulēšana datorā */
+        .kanban-container::-webkit-scrollbar { height: 6px; }
+        .kanban-container::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
 
-    /* Pieteikumu kartītes padarām nedaudz lielākas, lai vieglāk uzklikšķināt */
-    .order-card {
-        padding: 15px;
-        margin-bottom: 10px;
-        font-size: 14px;
-    }
+        /* Mobilie labojumi */
+        @media (max-width: 768px) {
+            .nav-buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                width: 100%;
+            }
+            .nav-buttons button, .nav-buttons a {
+                padding: 10px 4px !important;
+                font-size: 10px !important;
+                justify-content: center;
+            }
+            .kanban-container {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            .kanban-col {
+                min-height: 100px;
+            }
+        }
 
-    /* Virsraksti Admin panelī */
-    h1 {
-        font-size: 20px;
-        text-align: center;
-    }
-}
-		
+        /* Kartīšu animācija */
+        .order-card {
+            touch-action: manipulation;
+            user-select: none;
+        }
     </style>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
-<body class="bg-gray-100 font-sans antialiased">
+<body class="bg-slate-50 font-sans antialiased text-slate-900">
 
-    <nav class="bg-white border-b p-6 mb-8 shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="text-2xl font-bold text-red-600 italic tracking-tighter uppercase">
-                ARCUS <span class="text-gray-900 font-black italic">ADMIN</span>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="openBannerModal()" class="bg-gray-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 uppercase text-xs font-black tracking-widest">
-                    📢 Banera iestatījumi
-                </button>
-                <button onclick="fetchOrders()" class="bg-gray-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 uppercase text-xs font-black tracking-widest">
-                    Atjaunot datus
-                </button>
-                <a href="/" class="bg-gray-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 uppercase text-xs font-black tracking-widest">
-                    Atpakaļ uz lapu
-                </a>
+    <nav class="bg-white border-b sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-2xl font-black text-red-600 italic tracking-tighter uppercase">
+                    ARCUS <span class="text-slate-900">ADMIN</span>
+                </div>
+                
+                <div class="nav-buttons flex flex-wrap gap-2">
+                    <button onclick="openBannerModal()" class="flex items-center bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                        📢 Baneris
+                    </button>
+                    <button onclick="fetchOrders()" class="flex items-center bg-slate-800 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                        🔄 Atjaunot
+                    </button>
+                    <a href="/" class="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                        🏠 Mājaslapa
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 pb-20">
-        <div id="recent-alerts" class="mb-12 hidden">
-            <div class="flex items-center gap-3 mb-6">
-                <span class="relative flex h-4 w-4">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
+    <main class="max-w-7xl mx-auto px-4 py-6 md:py-10">
+        
+        <div id="recent-alerts" class="mb-10 hidden">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-red-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
                 </span>
-                <h2 class="text-sm font-black uppercase tracking-[0.2em] text-red-600 italic">Tikko saņemti pieteikumi</h2>
+                <h2 class="text-xs font-black uppercase tracking-widest text-red-600 italic">Jauni pieteikumi</h2>
             </div>
-            <div id="RecentOrders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            <div class="mt-10 border-b border-gray-200"></div>
+            <div id="RecentOrders" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
-        <div class="kanban-container flex gap-8 overflow-x-auto pb-10">
-            <div class="flex-1 min-w-[350px]">
-                <div class="flex items-center gap-2 mb-6 px-2">
-                    <div class="w-3 h-3 rounded-full bg-red-600"></div>
-                    <h3 class="font-black uppercase tracking-tighter italic text-gray-800 text-xl">Saņemts</h3>
+        <div class="kanban-container flex flex-row gap-6 overflow-x-auto pb-10">
+            
+            <div class="flex-1 min-w-[300px] md:min-w-[350px]">
+                <div class="flex items-center justify-between mb-4 px-2">
+                    <h3 class="font-black uppercase italic text-slate-700">📥 Saņemts</h3>
+                    <span id="count-Saņemts" class="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
                 </div>
-                <div id="Saņemts" class="kanban-col space-y-5 bg-gray-200/50 p-4 rounded-[32px] border-2 border-transparent"></div>
+                <div id="Saņemts" class="kanban-col space-y-3 bg-slate-200/50 p-3 rounded-[24px] border-2 border-dashed border-slate-300/50"></div>
             </div>
 
-            <div class="flex-1 min-w-[350px]">
-                <div class="flex items-center gap-2 mb-6 px-2">
-                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <h3 class="font-black uppercase tracking-tighter italic text-gray-800 text-xl">Remonts</h3>
+            <div class="flex-1 min-w-[300px] md:min-w-[350px]">
+                <div class="flex items-center justify-between mb-4 px-2">
+                    <h3 class="font-black uppercase italic text-yellow-700">🔧 Remonts</h3>
+                    <span id="count-Remonts" class="bg-yellow-100 text-yellow-600 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
                 </div>
-                <div id="Remonts" class="kanban-col space-y-5 bg-gray-200/50 p-4 rounded-[32px]"></div>
+                <div id="Remonts" class="kanban-col space-y-3 bg-yellow-50/50 p-3 rounded-[24px] border-2 border-dashed border-yellow-200/50"></div>
             </div>
 
-            <div class="flex-1 min-w-[350px]">
-                <div class="flex items-center gap-2 mb-6 px-2">
-                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                    <h3 class="font-black uppercase tracking-tighter italic text-gray-800 text-xl">Gatavs</h3>
+            <div class="flex-1 min-w-[300px] md:min-w-[350px]">
+                <div class="flex items-center justify-between mb-4 px-2">
+                    <h3 class="font-black uppercase italic text-green-700">✅ Gatavs</h3>
+                    <span id="count-Gatavs" class="bg-green-100 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
                 </div>
-                <div id="Gatavs" class="kanban-col space-y-5 bg-gray-200/50 p-4 rounded-[32px]"></div>
+                <div id="Gatavs" class="kanban-col space-y-3 bg-green-50/50 p-3 rounded-[24px] border-2 border-dashed border-green-200/50"></div>
             </div>
+
         </div>
     </main>
 
-    <div id="orderModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-[40px] overflow-hidden shadow-2xl transform transition-all scale-95 opacity-0" id="modalContent">
-            <div class="p-8">
-                <div class="flex justify-between items-start mb-6">
-                    <div id="modalID" class="text-[10px] font-black text-gray-300 tracking-[0.3em]"></div>
-                    <button onclick="closeModal()" class="absolute top-5 right-5 text-gray-400 ...">✕</button>
+    <div id="orderModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl transform transition-all" id="modalContent">
+            <div class="p-6 md:p-8">
+                <div class="flex justify-between items-start mb-4">
+                    <div id="modalID" class="text-[9px] font-black text-slate-400 tracking-widest"></div>
+                    <button onclick="closeModal()" class="text-slate-400 hover:text-red-600 text-xl">✕</button>
                 </div>
-                <div id="modalStatusBadge" class="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase italic mb-4"></div>
-                <h2 id="modalName" class="text-3xl font-black text-gray-900 uppercase italic mb-2 leading-none"></h2>
-                <div id="modalService" class="text-red-600 font-bold uppercase tracking-widest text-xs mb-6"></div>
+                <div id="modalStatusBadge" class="inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase mb-4"></div>
+                <h2 id="modalName" class="text-2xl font-black text-slate-900 uppercase italic mb-1"></h2>
+                <div id="modalService" class="text-red-600 font-bold uppercase tracking-widest text-[10px] mb-6"></div>
+                
                 <div class="space-y-6">
-                    <div>
-                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Problēmas apraksts</label>
-                        <p id="modalDescription" class="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-2xl border border-gray-100 italic"></p>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <label class="text-[9px] font-black text-slate-400 uppercase block mb-2">Klienta ziņojums</label>
+                        <p id="modalDescription" class="text-slate-700 text-sm leading-relaxed italic"></p>
                     </div>
-                    <div class="flex justify-between items-end border-t border-gray-100 pt-6">
-                        <div>
-                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Klients</label>
-                            <a id="modalPhone" href="" class="text-xl font-black text-gray-900 hover:text-red-600 transition-colors flex items-center gap-2"></a>
-                        </div>
-                        <div id="modalDate" class="text-[10px] font-bold text-gray-300 uppercase"></div>
+                    
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 border-t pt-6">
+                        <a id="modalPhone" href="" class="w-full sm:w-auto text-center bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2">
+                            📞 Zvanīt
+                        </a>
+                        <div id="modalDate" class="text-[10px] font-bold text-slate-400 uppercase"></div>
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-50 p-6 flex justify-end">
-                <button onclick="closeModal()" class="bg-gray-900 text-white px-8 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-red-600 transition-all">Aizvērt</button>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
+        <div class="relative bg-white rounded-[32px] shadow-2xl max-w-sm w-full p-8 text-center border-t-8 border-red-600">
+            <div class="text-5xl mb-4">🗑️</div>
+            <h2 class="text-xl font-black uppercase italic mb-2">Dzēst ierakstu?</h2>
+            <p class="text-slate-500 text-xs mb-8">Informācija tiks neatgriezeniski dzēsta no sistēmas.</p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 bg-slate-100 py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest">Atcelt</button>
+                <button id="confirmDeleteBtn" onclick="executeDelete()" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-red-700">Dzēst</button>
             </div>
         </div>
     </div>
 
     <div id="bannerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[150] hidden items-center justify-center p-4">
-        <div class="bg-slate-900 w-full max-w-md rounded-[32px] border border-slate-800 shadow-2xl overflow-hidden transform transition-all" id="bannerModalContent">
-            <div class="p-8">
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-xs font-black text-white uppercase tracking-[0.2em]">📢 Banera Konfigurācija</h2>
-                    <button onclick="closeBannerModal()" class="text-slate-500 hover:text-white">✕</button>
-                </div>
-                <div class="space-y-6">
-                    <div class="space-y-2">
-                        <label class="text-[9px] font-black uppercase text-slate-500 ml-1">Akcijas teksts</label>
-                        <textarea id="bannerText" rows="3" class="w-full bg-slate-950 border border-slate-800 p-4 rounded-2xl text-slate-200 outline-none focus:border-blue-500/50 transition-all font-medium resize-none text-sm"></textarea>
-                    </div>
-                    <div class="flex items-center justify-between bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                        <span class="text-[10px] font-black uppercase text-slate-400">Rādīt mājaslapā</span>
-                        <button onclick="toggleBannerState()" id="bannerToggleBtn" class="relative inline-flex h-6 w-12 items-center rounded-full bg-slate-700 transition-colors">
-                            <span id="bannerToggleCircle" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1"></span>
-                        </button>
-                    </div>
-                    <div class="p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10">
-                        <p class="text-[8px] font-black uppercase text-blue-500/50 mb-2">Live Preview</p>
-                        <div id="bannerPreview" class="text-[10px] text-blue-400 font-bold italic uppercase tracking-wider text-center bg-slate-950 py-2 rounded border border-slate-800">Piemēra teksts</div>
-                    </div>
-                </div>
-                <div class="mt-8 flex gap-3">
-                    <button onclick="closeBannerModal()" class="flex-1 bg-slate-800 text-slate-400 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-700 transition-all">Atcelt</button>
-                    <button id="saveBtn" onclick="saveBannerSettings()" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20">Saglabāt</button>
-                </div>
+        <div class="bg-slate-900 w-full max-w-md rounded-[32px] border border-slate-800 shadow-2xl p-8 transform transition-all">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-[10px] font-black text-white uppercase tracking-widest">📢 Banera iestatījumi</h2>
+                <button onclick="closeBannerModal()" class="text-slate-500 hover:text-white">✕</button>
+            </div>
+            <textarea id="bannerText" rows="3" class="w-full bg-slate-950 border border-slate-800 p-4 rounded-2xl text-slate-200 outline-none focus:border-red-600 transition-all text-sm mb-6 resize-none" placeholder="Ieraksti akcijas tekstu..."></textarea>
+            <div class="flex items-center justify-between bg-slate-950 p-4 rounded-2xl border border-slate-800 mb-6">
+                <span class="text-[10px] font-black uppercase text-slate-400">Rādīt klientiem</span>
+                <button onclick="toggleBannerState()" id="bannerToggleBtn" class="relative inline-flex h-6 w-12 items-center rounded-full bg-slate-700 transition-colors">
+                    <span id="bannerToggleCircle" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1"></span>
+                </button>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeBannerModal()" class="flex-1 bg-slate-800 text-slate-400 py-3 rounded-xl font-black uppercase text-[10px]">Atcelt</button>
+                <button id="saveBtn" onclick="saveBannerSettings()" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-black uppercase text-[10px] shadow-lg shadow-red-600/20">Saglabāt</button>
             </div>
         </div>
     </div>
+
+    <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
         const columns = ['Saņemts', 'Remonts', 'Gatavs'];
         let allOrders = [];
         let currentBannerStatus = false;
+        let lastOrderCount = 0;
+        let orderIdToDelete = null;
 
-        // 1. INICIALIZĀCIJA
         window.onload = () => {
-    fetchOrders();
-    loadBannerData();
-    
-    // PIEVIENO ŠO RINDIŅU ŠEIT:
-    setInterval(fetchOrders, 30000); 
-};
+            fetchOrders();
+            loadBannerData();
+            setInterval(fetchOrders, 20000); 
+        };
 
-        // 2. KANBAN KONFIGURĀCIJA
+        // Kanban Inicializācija
         columns.forEach(status => {
             const el = document.getElementById(status);
             new Sortable(el, {
                 group: 'kanban',
-                animation: 250,
+                animation: 200,
                 draggable: '.order-card',
                 ghostClass: 'sortable-ghost',
+                delay: 50, // Uzlabo mobilo lietošanu
+                delayOnTouchOnly: true,
                 onEnd: async (evt) => {
                     const orderId = evt.item.getAttribute('data-id');
                     const newStatus = evt.to.id;
+                    updateCounts();
                     await updateOrderStatus(orderId, newStatus);
                 }
             });
         });
 
-        // 3. DATU IEGŪŠANA UN ATTĒLOŠANA
-let lastOrderCount = 0; 
-
-async function fetchOrders() {
-    try {
-        const response = await fetch('/api/admin/orders?t=' + Date.now());
-        const data = await response.json(); // Ielādējam datus mainīgajā 'data'
-        
-        // 1. Pirmā ielāde: vienkārši piefiksējam, cik pieteikumu jau ir
-        if (lastOrderCount === 0) {
-            lastOrderCount = data.length;
-        } 
-        // 2. Jaunums: Ja pieteikumu skaits ir pieaudzis
-        else if (data.length > lastOrderCount) {
-            const sound = document.getElementById('notificationSound');
-            if (sound) {
-                sound.currentTime = 0; // Atgriež skaņu uz sākumu
-                sound.play().catch(e => console.log("Nepieciešams klikšķis lapā, lai skanētu!"));
-            }
-            // Šī rindiņa ir vissvarīgākā - mēs atjaunojam skaitītāju!
-            lastOrderCount = data.length; 
+        async function fetchOrders() {
+            try {
+                const response = await fetch('/api/admin/orders?t=' + Date.now());
+                const data = await response.json();
+                
+                if (lastOrderCount !== 0 && data.length > lastOrderCount) {
+                    const sound = document.getElementById('notificationSound');
+                    if (sound) sound.play().catch(() => {});
+                }
+                lastOrderCount = data.length;
+                allOrders = data;
+                renderOrders(allOrders);
+                updateCounts();
+            } catch (e) { console.error("Datu kļūda:", e); }
         }
 
-        allOrders = data;
-        renderOrders(allOrders);
-    } catch (e) { 
-        console.error("Kļūda ielādējot pieteikumus:", e); 
-    }
-}
+        function updateCounts() {
+            columns.forEach(col => {
+                const count = allOrders.filter(o => o.statuss === col).length;
+                const countEl = document.getElementById(`count-${col}`);
+                if(countEl) countEl.innerText = count;
+            });
+        }
 
         function renderOrders(orders) {
             columns.forEach(col => document.getElementById(col).innerHTML = '');
@@ -234,9 +245,9 @@ async function fetchOrders() {
             if(recentContainer) recentContainer.innerHTML = '';
             
             const dismissed = JSON.parse(localStorage.getItem('dismissedOrders') || '[]');
-            const recentOrders = [...orders].reverse().filter(o => !dismissed.includes(o.id)).slice(0, 3);
-            const alertsDiv = document.getElementById('recent-alerts');
+            const recentOrders = [...orders].reverse().filter(o => !dismissed.includes(o.id) && o.statuss === 'Saņemts').slice(0, 3);
             
+            const alertsDiv = document.getElementById('recent-alerts');
             if (recentOrders.length > 0) {
                 alertsDiv.classList.remove('hidden');
                 recentOrders.forEach(o => recentContainer.insertAdjacentHTML('beforeend', createCardHtml(o, true)));
@@ -251,37 +262,76 @@ async function fetchOrders() {
         }
 
         function createCardHtml(order, isHighlighted) {
-            const borderClass = isHighlighted ? 'border-red-500 shadow-md' : 'border-white';
+            const shadow = isHighlighted ? 'shadow-red-200' : 'shadow-sm';
             return `
                 <div onclick="openModal('${order.id}')" data-id="${order.id}" 
-                     class="order-card bg-white p-4 rounded-2xl border-2 ${borderClass} shadow-sm cursor-pointer hover:border-red-600 hover:shadow-md transition-all group relative overflow-hidden">
+                     class="order-card bg-white p-4 rounded-2xl border border-slate-200 ${shadow} cursor-pointer hover:border-red-500 transition-all group relative">
                     <button onclick="event.stopPropagation(); openDeleteModal('${order.id}')" 
-                            class="absolute top-2 right-2 bg-gray-100 text-gray-400 w-6 h-6 rounded-full text-[10px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-600 hover:text-white z-20">✕</button>
-                    <div class="flex items-center gap-3">
-                        <div class="w-2 h-2 rounded-full ${isHighlighted ? 'bg-red-600 animate-pulse' : 'bg-gray-300'}"></div>
-                        <h4 class="font-black text-gray-900 uppercase italic text-sm truncate pr-4">${order.vards}</h4>
+                            class="absolute top-3 right-3 text-slate-300 hover:text-red-600 p-1 z-20">✕</button>
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-2 h-2 rounded-full ${isHighlighted ? 'bg-red-600 animate-pulse' : 'bg-slate-300'}"></div>
+                        <h4 class="font-bold text-slate-800 uppercase text-xs truncate pr-6">${order.vards}</h4>
                     </div>
-                    ${isHighlighted ? `<div class="mt-2"><button onclick="event.stopPropagation(); dismissNew('${order.id}')" class="text-[8px] font-black text-green-600 uppercase tracking-widest">✓ Izlasīts</button></div>` : ''}
+                    <p class="text-[10px] text-slate-500 font-medium">${order.pakalpojums}</p>
+                    ${isHighlighted ? `<button onclick="event.stopPropagation(); dismissNew('${order.id}')" class="mt-3 text-[9px] font-black text-green-600 uppercase">✓ Atzīmēt kā skatītu</button>` : ''}
                 </div>`;
         }
 
+        // --- Statusa atjaunošana ---
         async function updateOrderStatus(id, newStatus) {
+            const order = allOrders.find(o => o.id === id);
+            if(order) order.statuss = newStatus;
             try {
                 await fetch('/api/admin/update-status', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id, newStatus })
                 });
-            } catch (e) { console.error("Kļūda statusa atjaunošanā:", e); }
+            } catch (e) { console.error("Servera kļūda:", e); }
         }
 
-        async function deleteOrder(id) {
-            if (confirm("Vai tiešām vēlaties dzēst šo pieteikumu?")) {
-                const res = await fetch(`/api/admin/delete/${id}`, { method: 'DELETE' });
-                if (res.ok) fetchOrders();
-            }
+        // --- Dzēšanas funkcijas ---
+        function openDeleteModal(id) { 
+            orderIdToDelete = id; 
+            document.getElementById('deleteModal').classList.remove('hidden'); 
+        }
+        function closeDeleteModal() { 
+            document.getElementById('deleteModal').classList.add('hidden'); 
+        }
+        async function executeDelete() {
+            if (!orderIdToDelete) return;
+            try {
+                await fetch(`/api/admin/delete/${orderIdToDelete}`, { method: 'DELETE' });
+                closeDeleteModal();
+                fetchOrders();
+            } catch (e) { alert("Neizdevās dzēst"); }
         }
 
+        // --- Modālie logi ---
+        function openModal(id) {
+            const order = allOrders.find(o => o.id === id);
+            if (!order) return;
+            
+            document.getElementById('modalID').innerText = `#${order.id.slice(-6)}`;
+            document.getElementById('modalName').innerText = order.vards;
+            document.getElementById('modalService').innerText = order.pakalpojums;
+            document.getElementById('modalDescription').innerText = order.apraksts || 'Nav apraksta.';
+            document.getElementById('modalPhone').innerText = `📞 Zvanīt: ${order.talrunis}`;
+            document.getElementById('modalPhone').href = `tel:${order.talrunis}`;
+            document.getElementById('modalDate').innerText = order.datums;
+            
+            const badge = document.getElementById('modalStatusBadge');
+            badge.innerText = order.statuss;
+            badge.className = `inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase ${
+                order.statuss === 'Gatavs' ? 'bg-green-100 text-green-600' : 
+                order.statuss === 'Remonts' ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'
+            }`;
+
+            document.getElementById('orderModal').classList.remove('hidden');
+            document.getElementById('orderModal').classList.add('flex');
+        }
+
+        function closeModal() { document.getElementById('orderModal').classList.replace('flex', 'hidden'); }
         function dismissNew(id) {
             let dismissed = JSON.parse(localStorage.getItem('dismissedOrders') || '[]');
             dismissed.push(id);
@@ -289,191 +339,45 @@ async function fetchOrders() {
             fetchOrders();
         }
 
-        // 4. MODĀLIE LOGI
-        function openModal(id) {
-    const order = allOrders.find(o => o.id === id);
-    if (!order) return;
-
-    // Automātiski atzīmējam kā izlasītu, kad atver pieteikumu
-    dismissNew(id); 
-
-    document.getElementById('modalID').innerText = `#${order.id.slice(-6)}`;
-    document.getElementById('modalName').innerText = order.vards;
-    document.getElementById('modalService').innerText = order.pakalpojums;
-    document.getElementById('modalDescription').innerText = order.apraksts || 'Nav apraksta.';
-    document.getElementById('modalPhone').innerText = `📞 ${order.talrunis}`;
-    document.getElementById('modalPhone').href = `tel:${order.talrunis}`;
-    document.getElementById('modalDate').innerText = order.datums;
-    
-    const badge = document.getElementById('modalStatusBadge');
-    badge.innerText = order.statuss;
-    badge.className = `inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase italic mb-4 ${
-        order.statuss === 'Gatavs' ? 'bg-green-100 text-green-600' : 
-        order.statuss === 'Remonts' ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'
-    }`;
-
-    const modal = document.getElementById('orderModal');
-    const content = document.getElementById('modalContent');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    setTimeout(() => content.classList.replace('opacity-0', 'opacity-100'), 10);
-}
-
-        function closeModal() {
-            const modal = document.getElementById('orderModal');
-            modal.classList.replace('flex', 'hidden');
-        }
-
-        // 5. BANERA VADĪBA
+        // --- Banera funkcijas ---
         async function loadBannerData() {
-            try {
-                const res = await fetch('/api/settings/banner?t=' + Date.now());
-                const data = await res.json();
-                currentBannerStatus = data.enabled;
-                document.getElementById('bannerText').value = data.text || "";
-                updateBannerModalUI();
-            } catch (e) { console.error("Kļūda banera datu ielādē:", e); }
-        }
-
-        function openBannerModal() {
-            const m = document.getElementById('bannerModal');
-            m.classList.remove('hidden');
-            m.classList.add('flex');
+            const res = await fetch('/api/settings/banner');
+            const data = await res.json();
+            currentBannerStatus = data.enabled;
+            document.getElementById('bannerText').value = data.text || "";
             updateBannerModalUI();
         }
 
-        function closeBannerModal() {
-            document.getElementById('bannerModal').classList.replace('flex', 'hidden');
-        }
-
-        function toggleBannerState() {
-            currentBannerStatus = !currentBannerStatus;
-            updateBannerModalUI();
-        }
+        function openBannerModal() { document.getElementById('bannerModal').classList.replace('hidden', 'flex'); }
+        function closeBannerModal() { document.getElementById('bannerModal').classList.replace('flex', 'hidden'); }
+        function toggleBannerState() { currentBannerStatus = !currentBannerStatus; updateBannerModalUI(); }
 
         function updateBannerModalUI() {
             const btn = document.getElementById('bannerToggleBtn');
             const circle = document.getElementById('bannerToggleCircle');
-            const preview = document.getElementById('bannerPreview');
-            const text = document.getElementById('bannerText').value;
-
             if (currentBannerStatus) {
-                btn.classList.replace('bg-slate-700', 'bg-blue-600');
+                btn.classList.replace('bg-slate-700', 'bg-red-600');
                 circle.classList.replace('translate-x-1', 'translate-x-7');
-                preview.style.opacity = "1";
             } else {
-                btn.classList.replace('bg-blue-600', 'bg-slate-700');
+                btn.classList.replace('bg-red-600', 'bg-slate-700');
                 circle.classList.replace('translate-x-7', 'translate-x-1');
-                preview.style.opacity = "0.3";
             }
-            preview.innerText = text || "NAV TEKSTA";
         }
 
         async function saveBannerSettings() {
             const text = document.getElementById('bannerText').value;
-            const btn = document.getElementById('saveBtn');
-            const originalText = btn.innerText;
-            
-            btn.innerText = "SAGLABĀ...";
-            btn.disabled = true;
-
-            try {
-                const res = await fetch('/api/settings/banner', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ enabled: currentBannerStatus, text: text })
-                });
-                
-                if (res.ok) {
-                    btn.innerText = "SAGLABĀTS!";
-                    setTimeout(() => {
-                        btn.innerText = originalText;
-                        btn.disabled = false;
-                        closeBannerModal();
-                    }, 1000);
-                }
-            } catch (e) { 
-                alert("Kļūda saglabājot!");
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
+            await fetch('/api/settings/banner', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled: currentBannerStatus, text })
+            });
+            closeBannerModal();
         }
 
-        document.getElementById('bannerText').addEventListener('input', updateBannerModalUI);
-
-        window.onclick = function(e) {
+        window.onclick = (e) => {
             if (e.target.id === 'orderModal') closeModal();
             if (e.target.id === 'bannerModal') closeBannerModal();
         }
-
-        let orderIdToDelete = null;
-
-function openDeleteModal(id) {
-    console.log("Atveru dzēšanas logu ID:", id); // Pārbaudei
-    orderIdToDelete = id;
-    const modal = document.getElementById('deleteModal');
-    modal.classList.remove('hidden');
-}
-
-function closeDeleteModal() {
-    orderIdToDelete = null;
-    document.getElementById('deleteModal').classList.add('hidden');
-}
-
-async function executeDelete() {
-    if (!orderIdToDelete) return;
-
-    const btn = document.getElementById('confirmDeleteBtn');
-    const originalText = btn.innerText;
-    
-    btn.innerText = "DZĒŠ...";
-    btn.disabled = true;
-
-    try {
-        const res = await fetch(`/api/admin/delete/${orderIdToDelete}`, { 
-            method: 'DELETE' 
-        });
-        
-        const data = await res.json();
-        
-        if (data.success) {
-            closeDeleteModal();
-            fetchOrders(); // Atjaunojam sarakstu
-        } else {
-            alert("Kļūda dzēšot pieteikumu.");
-        }
-    } catch (e) {
-        console.error("Servera kļūda:", e);
-        alert("Neizdevās sazināties ar serveri.");
-    } finally {
-        btn.innerText = originalText;
-        btn.disabled = false;
-    }
-}
     </script>
-
-<div id="deleteModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
-    <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
-    
-    <div class="relative bg-white rounded-[40px] shadow-2xl max-w-sm w-full p-10 text-center border-t-8 border-red-600">
-        
-        <button onclick="closeDeleteModal()" class="absolute top-6 right-6 text-gray-300 hover:text-red-600 transition-all text-2xl font-light">✕</button>
-        
-        <div class="text-6xl mb-4">🗑️</div>
-        <h2 class="text-2xl font-black uppercase italic tracking-tighter mb-2">Dzēst?</h2>
-        <p class="text-gray-500 text-sm mb-8">Šī darbība ir neatgriezeniska.</p>
-        
-        <div class="flex gap-4">
-            <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest">Atcelt</button>
-            <button id="confirmDeleteBtn" onclick="executeDelete()" class="flex-1 bg-red-600 text-white py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest">Dzēst</button>
-        </div>
-    </div>
-</div>
-
-<audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
 </body>
-
-
-
 </html>
