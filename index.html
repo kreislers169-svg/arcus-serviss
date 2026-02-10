@@ -19,7 +19,42 @@
             animation: marquee 70s linear infinite;
         }
         .animate-marquee:hover { animation-play-state: paused; }
+		
+		/* --- MOBILĀ VERSIJA --- */
+@media screen and (max-width: 768px) {
+    /* Galvenais konteiners vairs nav blakus, bet viens zem otra */
+    .container {
+        flex-direction: column;
+        padding: 15px;
+        margin-top: 20px;
+    }
+
+    /* Banera teksts kļūst mazāks, lai neaizņem visu ekrānu */
+    .banner h1 {
+        font-size: 1.8rem;
+        text-align: center;
+    }
+
+    /* Forma aizņem pilnu platumu */
+    form {
+        width: 100% !important;
+        margin: 0;
+        padding: 15px;
+    }
+
+    /* Ievades lauki kļūst lielāki, lai ērtāk trāpīt ar pirkstu */
+    input, select, textarea, button {
+        font-size: 16px !important; /* Novērš automātisko tālummaiņu iPhone ierīcēs */
+        padding: 12px;
+    }
+
+    /* Ja tev ir bildes sānā, tās tagad būs apakšā vai pazudīs */
+    .image-section {
+        display: none; /* Vai nu paslēpjam, vai liekam zem formas */
+    }
+}
     </style>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body class="bg-white font-sans antialiased">
