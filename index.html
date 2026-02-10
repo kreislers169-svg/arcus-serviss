@@ -3,11 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARCUS | Datoru Servisa Centrs</title>
+    <title>ARCUS | Profesionāls Datoru Serviss</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         html { scroll-behavior: smooth; }
-        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 0% 0%, #1a1a1a 0%, #050505 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism efekti */
+        .glass-nav {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(220, 38, 38, 0.3);
+            transform: translateY(-5px);
+        }
+
+        /* Fona spīdumi */
+        .glow {
+            position: fixed;
+            width: 50vw;
+            height: 50vw;
+            background: #dc2626;
+            filter: blur(150px);
+            opacity: 0.08;
+            z-index: -1;
+            border-radius: 50%;
+        }
+
         /* Akcijas joslas animācija */
         @keyframes marquee {
             0% { transform: translateX(0); }
@@ -16,376 +53,415 @@
         .animate-marquee {
             display: flex;
             width: max-content;
-            animation: marquee 70s linear infinite;
+            animation: marquee 40s linear infinite;
         }
-        .animate-marquee:hover { animation-play-state: paused; }
-		
-		/* --- MOBILĀ VERSIJA --- */
-@media screen and (max-width: 768px) {
-    /* Galvenais konteiners vairs nav blakus, bet viens zem otra */
-    .container {
-        flex-direction: column;
-        padding: 15px;
-        margin-top: 20px;
-    }
 
-    /* Banera teksts kļūst mazāks, lai neaizņem visu ekrānu */
-    .banner h1 {
-        font-size: 1.8rem;
-        text-align: center;
-    }
+        /* Formas elementi */
+        .input-dark {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-dark:focus {
+            border-color: #dc2626;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.15);
+        }
 
-    /* Forma aizņem pilnu platumu */
-    form {
-        width: 100% !important;
-        margin: 0;
-        padding: 15px;
-    }
-
-    /* Ievades lauki kļūst lielāki, lai ērtāk trāpīt ar pirkstu */
-    input, select, textarea, button {
-        font-size: 16px !important; /* Novērš automātisko tālummaiņu iPhone ierīcēs */
-        padding: 12px;
-    }
-
-    /* Ja tev ir bildes sānā, tās tagad būs apakšā vai pazudīs */
-    .image-section {
-        display: none; /* Vai nu paslēpjam, vai liekam zem formas */
-    }
-}
+        @media (max-width: 768px) {
+            .animate-marquee { animation-duration: 20s; }
+        }
     </style>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+<body class="antialiased">
 
-<body class="bg-white font-sans antialiased">
+    <div class="glow" style="top: -10%; left: -10%;"></div>
+    <div class="glow" style="bottom: -10%; right: -10%; background: #991b1b;"></div>
 
-    <div id="akcijas-josla" class="hidden bg-slate-900 text-blue-400 py-2 border-b border-blue-500/30 overflow-hidden relative z-[60]">
-    <div class="animate-marquee whitespace-nowrap flex items-center">
-        <span id="akcijas-teksts" class="text-sm font-black uppercase tracking-[0.2em] px-4"></span>
-        <span id="akcijas-teksts-2" class="text-sm font-black uppercase tracking-[0.2em] px-4"></span>
-    </div>
-</div>
-
-    <nav class="bg-white border-b p-4 flex justify-between items-center shadow-md sticky top-0 z-50">
-        <div class="text-2xl font-bold text-red-600 italic tracking-tighter uppercase">ARCUS <span class="text-gray-400 font-light">| TĪKLS</span></div>
-        <div class="hidden md:flex space-x-8 font-black uppercase text-[10px] tracking-widest text-gray-600">
-            <a href="#sakums" class="hover:text-red-600 transition">Sākums</a>
-            <a href="#pakalpojumi" class="hover:text-red-600 transition">Pakalpojumi</a>
-            <a href="#par-mums" class="hover:text-red-600 transition">Par mums</a>
+    <div id="akcijas-josla" class="hidden bg-red-600 text-white py-2 overflow-hidden relative z-[60]">
+        <div class="animate-marquee whitespace-nowrap flex items-center">
+            <span id="akcijas-teksts" class="text-[10px] font-black uppercase tracking-[0.3em] px-4"></span>
+            <span id="akcijas-teksts-2" class="text-[10px] font-black uppercase tracking-[0.3em] px-4"></span>
         </div>
-        <button onclick="toggleModal()" class="bg-gray-900 text-white px-6 py-2 rounded-xl shadow-lg hover:bg-red-600 transition uppercase text-xs font-black tracking-widest">
+    </div>
+
+    <nav class="glass-nav p-5 flex justify-between items-center sticky top-0 z-50">
+        <div class="text-2xl font-black text-white italic tracking-tighter uppercase">
+            ARCUS <span class="text-red-600">TĪKLS</span>
+        </div>
+        <div class="hidden md:flex space-x-8 font-bold uppercase text-[10px] tracking-[0.2em] text-white/50">
+            <a href="#sakums" class="hover:text-white transition">Sākums</a>
+            <a href="#pakalpojumi" class="hover:text-white transition">Pakalpojumi</a>
+            <a href="#par-mums" class="hover:text-white transition">Kontakti</a>
+        </div>
+        <button onclick="toggleModal()" class="bg-red-600 text-white px-8 py-3 rounded-2xl shadow-lg shadow-red-900/20 hover:bg-red-700 transition-all uppercase text-[10px] font-black tracking-widest active:scale-95">
             Pieteikties
         </button>
     </nav>
 
-    <header id="sakums" class="py-24 px-6 text-center bg-white border-b">
-        <h1 class="text-5xl font-black mb-4 text-gray-900 uppercase tracking-tighter italic">Datoru Servisa <span class="text-red-600">Centrs</span></h1>
-        <p class="max-w-xl mx-auto text-gray-500 text-lg font-medium">Profesionāls remonts un diagnostika Jūsu IT tehnikai Liepājas sirdī.</p>
+    <header id="sakums" class="py-32 px-6 text-center">
+        <div class="inline-block px-4 py-1 rounded-full bg-red-600/10 border border-red-600/20 mb-8">
+            <span class="text-[10px] font-bold text-red-500 uppercase tracking-[0.3em]">Liepājas vadošais serviss</span>
+        </div>
+        <h1 class="text-6xl md:text-8xl font-black mb-6 text-white uppercase tracking-tighter italic leading-none">
+            DATORU <span class="text-red-600">SERVISA</span><br>CENTRS
+        </h1>
+        <p class="max-w-2xl mx-auto text-white/40 text-lg font-medium tracking-wide">
+            Profesionāls remonts un padziļināta diagnostika Jūsu tehnikai.<br>
+            Mēs atrisinām to, ko citi nevar.
+        </p>
     </header>
 
-    <main id="pakalpojumi" class="max-w-6xl mx-auto p-12 grid md:grid-cols-3 gap-10">
-        <div class="group p-8 border border-gray-100 shadow-sm rounded-3xl bg-white text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl border-t-4 border-t-transparent hover:border-t-red-600">
-            <div class="text-5xl mb-6 transform group-hover:scale-110 transition-transform">🔍</div>
-            <h3 class="font-black text-xl mb-3 tracking-tighter uppercase italic">Pilna Diagnostika</h3>
-            <p class="text-gray-500 text-sm leading-relaxed mb-4 font-medium">Padziļināta komponenšu pārbaude un defektu noteikšana.</p>
-            <span class="text-red-600 font-black text-xs uppercase tracking-widest bg-red-50 px-4 py-1 rounded-full">No 0.00 €*</span>
+    <main id="pakalpojumi" class="max-w-7xl mx-auto p-6 md:p-12 grid md:grid-cols-3 gap-8">
+        <div class="glass-card p-10 rounded-[40px] text-center group">
+            <div class="text-5xl mb-6 group-hover:scale-110 transition-transform">🔍</div>
+            <h3 class="font-black text-xl mb-3 tracking-tighter uppercase italic">Diagnostika</h3>
+            <p class="text-white/40 text-sm leading-relaxed mb-6 font-medium">Pilna dzelžu un programmatūras pārbaude.</p>
+            <span class="text-red-500 font-black text-[10px] uppercase tracking-widest bg-red-600/10 px-6 py-2 rounded-full border border-red-600/20">No 0.00 €*</span>
         </div>
-        <div class="group p-8 border border-gray-100 shadow-sm rounded-3xl bg-white text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl border-t-4 border-t-red-600">
-            <div class="text-5xl mb-6 transform group-hover:scale-110 transition-transform">💿</div>
-            <h3 class="font-black text-xl mb-3 tracking-tighter uppercase italic">OS & Programmas</h3>
-            <p class="text-gray-500 text-sm leading-relaxed mb-4 font-medium">Windows/MacOS instalācija un vīrusu tīrīšana.</p>
-            <span class="text-red-600 font-black text-xs uppercase tracking-widest bg-red-50 px-4 py-1 rounded-full">No 25.00 €</span>
+        <div class="glass-card p-10 rounded-[40px] text-center group border-t-red-600/50">
+            <div class="text-5xl mb-6 group-hover:scale-110 transition-transform">💿</div>
+            <h3 class="font-black text-xl mb-3 tracking-tighter uppercase italic">OS Setup</h3>
+            <p class="text-white/40 text-sm leading-relaxed mb-6 font-medium">Windows/Mac instalācija un optimizācija.</p>
+            <span class="text-red-500 font-black text-[10px] uppercase tracking-widest bg-red-600/10 px-6 py-2 rounded-full border border-red-600/20">No 25.00 €</span>
         </div>
-        <div class="group p-8 border border-gray-100 shadow-sm rounded-3xl bg-white text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl border-t-4 border-t-transparent hover:border-t-red-600">
-            <div class="text-5xl mb-6 transform group-hover:scale-110 transition-transform">💻</div>
-            <h3 class="font-black text-xl mb-3 tracking-tighter uppercase italic">Detaļu Nomaiņa</h3>
-            <p class="text-gray-500 text-sm leading-relaxed mb-4 font-medium">Ekrānu, tastatūru un SSD disku uzstādīšana.</p>
-            <span class="text-red-600 font-black text-xs uppercase tracking-widest bg-red-50 px-4 py-1 rounded-full">No 15.00 €</span>
+        <div class="glass-card p-10 rounded-[40px] text-center group">
+            <div class="text-5xl mb-6 group-hover:scale-110 transition-transform">🛠️</div>
+            <h3 class="font-black text-xl mb-3 tracking-tighter uppercase italic">Detaļu maiņa</h3>
+            <p class="text-white/40 text-sm leading-relaxed mb-6 font-medium">Ekrānu, tastatūru un SSD uzstādīšana.</p>
+            <span class="text-red-500 font-black text-[10px] uppercase tracking-widest bg-red-600/10 px-6 py-2 rounded-full border border-red-600/20">No 15.00 €</span>
         </div>
     </main>
 
-    <section id="par-mums" class="bg-gray-900 text-white py-24 px-6">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+    <section id="par-mums" class="py-24 px-6 max-w-7xl mx-auto">
+        <div class="glass-card p-12 rounded-[48px] grid md:grid-cols-2 gap-16 items-center">
             <div>
                 <h2 class="text-4xl font-black mb-6 uppercase tracking-tighter italic text-red-600">Kāpēc ARCUS?</h2>
-                <p class="text-gray-400 text-lg leading-relaxed mb-8 font-medium">
-                    Mēs esam vairāk nekā tikai serviss. "Arcustīkls" ir kvalitātes simbols Liepājā jau vairāk nekā 10 gadus. 
+                <p class="text-white/60 text-lg leading-relaxed mb-8 font-medium">
+                    "Arcus Tīkls" ir kvalitātes simbols Liepājā jau vairāk nekā 10 gadus. Mūsu inženieri spēj veikt vissarežģītākos mikrolodēšanas darbus un datu atjaunošanu.
                 </p>
+                <div class="flex gap-4">
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                        <p class="text-2xl font-black text-white italic">10+</p>
+                        <p class="text-[10px] uppercase text-white/40 tracking-widest">Gadu pieredze</p>
+                    </div>
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                        <p class="text-2xl font-black text-white italic">5k+</p>
+                        <p class="text-[10px] uppercase text-white/40 tracking-widest">Klientu</p>
+                    </div>
+                </div>
             </div>
-            <div class="w-full h-[400px] rounded-[40px] overflow-hidden shadow-2xl border-4 border-gray-800 grayscale hover:grayscale-0 transition-all duration-700">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2222.846564633785!2d21.0104610773822!3d56.50495807337346!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46faa626773531b7%3A0xc665191f6d33887c!2sGraudu%20iela%2043%2C%20Liep%C4%81ja%2C%20LV-3401!5e0!3m2!1slv!2slv!4v1700000000000" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            <div class="w-full h-[350px] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 opacity-80 hover:opacity-100 transition-opacity">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2204.6!2d21.01!3d56.51!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNTbCsDMwJzM2LjAiTiAyMcKwMDAnMzYuMCJF!5e0!3m2!1slv!2slv!4v1620000000000!5m2!1slv!2slv" width="100%" height="100%" style="border:0; filter: invert(90%) hue-rotate(180deg);" allowfullscreen="" loading="lazy"></iframe>
             </div>
         </div>
     </section>
 
     <div id="bookingModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm" onclick="toggleModal()"></div>
-        <div class="relative bg-white rounded-[40px] shadow-2xl max-w-lg w-full overflow-hidden z-[110] border-t-[12px] border-red-600">
-            <button onclick="toggleModal()" class="absolute top-6 right-6 text-gray-300 hover:text-red-600 transition-all font-black text-2xl">×</button>
-            <div class="p-10">
-                <h2 class="text-3xl font-black text-gray-900 tracking-tighter uppercase italic mb-6">Pieteikt <span class="text-red-600">Remontu</span></h2>
-                <form id="repairForm" class="space-y-4">
-                    <input type="text" name="vards" placeholder="Vārds Uzvārds" required class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-red-600 font-bold">
-                    <div class="grid grid-cols-2 gap-4">
-                        <input type="tel" name="talrunis" id="talrunis"placeholder="Telefons (8 cipari)" required maxlength="8" pattern="[0-9]{8}"oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);"class="p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-red-600 font-bold" >
-                        <input type="email" name="email" placeholder="E-pasts" required class="p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-red-600 font-bold">
-                    </div>
-                    <select name="pakalpojums" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-red-600 font-black uppercase text-xs tracking-widest">
-                        <option>🔍 Pilna Diagnostika</option>
-                        <option>💨 Profilaktiskā apkope</option>
-                        <option>💿 OS & Programmas</option>
-                        <option>💻 Detaļu Nomaiņa</option>
-                        <option>🛠️ Sarežģīti Remonti</option>
-                    </select>
-                    <textarea name="apraksts" placeholder="Īss problēmas apraksts..." rows="3" class="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-red-600 font-medium resize-none"></textarea>
-                    <button type="submit" class="w-full bg-gray-900 text-white font-black py-5 rounded-2xl hover:bg-red-600 transition-all uppercase tracking-widest text-xs shadow-xl">Nosūtīt Pieteikumu</button>
-                </form>
-            </div>
+        <div class="fixed inset-0 bg-black/80 backdrop-blur-md" onclick="toggleModal()"></div>
+        <div class="relative glass-card rounded-[40px] max-w-lg w-full overflow-hidden z-[110] border-t-8 border-red-600 p-10">
+            <button onclick="toggleModal()" class="absolute top-6 right-8 text-white/20 hover:text-red-600 transition-all font-black text-3xl">×</button>
+            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic mb-8">Pieteikt <span class="text-red-600">Servisu</span></h2>
+            
+            <form id="repairForm" class="space-y-4">
+                <input type="text" name="vards" placeholder="VĀRDS UZVĀRDS" required class="input-dark w-full p-5 rounded-2xl font-bold uppercase text-xs tracking-widest">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="tel" name="talrunis" id="talrunis" placeholder="TELEFONS" required maxlength="8" class="input-dark p-5 rounded-2xl font-bold text-center">
+                    <input type="email" name="email" placeholder="E-PASTS" required class="input-dark p-5 rounded-2xl font-bold text-center">
+                </div>
+                <select name="pakalpojums" class="input-dark w-full p-5 rounded-2xl font-black uppercase text-xs tracking-[0.2em] appearance-none">
+                    <option class="text-black">🔍 Pilna Diagnostika</option>
+                    <option class="text-black">💿 OS & Programmas</option>
+                    <option class="text-black">🛠️ Detaļu Nomaiņa</option>
+                    <option class="text-black">🛠️ Sarežģīti Remonti</option>
+                </select>
+                <textarea name="apraksts" placeholder="ĪSS PROBLĒMAS APRAKSTS..." rows="3" class="input-dark w-full p-5 rounded-2xl font-medium resize-none"></textarea>
+                <button type="submit" class="w-full bg-red-600 text-white font-black py-6 rounded-2xl hover:bg-red-700 transition-all uppercase tracking-widest text-xs shadow-xl active:scale-[0.98]">Nosūtīt Pieteikumu</button>
+            </form>
         </div>
     </div>
 
     <div id="thanksModal" class="hidden fixed inset-0 z-[150] flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-md"></div>
-        <div class="relative bg-white rounded-[40px] shadow-2xl max-w-sm w-full p-12 text-center border-t-8 border-red-600">
-            <div class="text-7xl mb-6">✅</div>
-            <h2 class="text-3xl font-black text-gray-900 tracking-tighter uppercase italic mb-2">Nosūtīts!</h2>
-            <p class="text-gray-500 font-medium mb-8 text-sm leading-relaxed">Paldies par pieteikumu! Mēs ar Jums sazināsimies tuvākajā laikā.</p>
-            <button onclick="document.getElementById('thanksModal').classList.add('hidden')" class="w-full bg-gray-900 hover:bg-red-600 text-white font-black py-4 rounded-2xl transition-all uppercase tracking-widest text-xs">Sapratu</button>
+        <div class="fixed inset-0 bg-black/90 backdrop-blur-xl"></div>
+        <div class="relative glass-card rounded-[40px] max-w-sm w-full p-12 text-center border-t-8 border-green-500">
+            <div class="text-6xl mb-6">🚀</div>
+            <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic mb-2">Nosūtīts!</h2>
+            <p class="text-white/40 font-medium mb-8 text-sm leading-relaxed">Paldies! Mēs ar Jums sazināsimies tuvākajā laikā.</p>
+            <button onclick="document.getElementById('thanksModal').classList.add('hidden')" class="w-full bg-white/10 hover:bg-white/20 text-white font-black py-4 rounded-2xl transition-all uppercase tracking-widest text-[10px]">Aizvērt</button>
         </div>
     </div>
 
-    <button onclick="toggleStatusDrawer()" class="fixed top-1/2 right-0 -translate-y-1/2 bg-gray-900 text-white p-3 rounded-l-2xl shadow-2xl z-[80] hover:bg-red-600 transition-all group flex items-center gap-2">
-        <span class="[writing-mode:vertical-lr] rotate-180 uppercase font-black text-[10px] tracking-widest py-2">Pārbaudīt statusu 🔍</span>
-    </button>
+    <button onclick="toggleStatusDrawer()" 
+    class="fixed top-1/2 right-0 -translate-y-1/2 z-[80] flex items-center group outline-none">
+    
+    <div class="h-32 w-[2px] bg-gradient-to-b from-transparent via-red-600 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 mr-2"></div>
 
-    <div id="statusDrawer" class="fixed inset-y-0 right-0 w-full md:w-96 bg-white shadow-[-20px_0_50px_rgba(0,0,0,0.1)] z-[200] transform translate-x-full transition-transform duration-500 ease-in-out border-l-8 border-red-600">
-        <div class="p-8 h-full flex flex-col">
-            <button onclick="toggleStatusDrawer()" class="self-end text-3xl font-light hover:text-red-600 transition">×</button>
-            <div class="mt-10 text-center">
-                <h2 class="text-3xl font-black uppercase italic tracking-tighter mb-2">Pasūtījuma <span class="text-red-600">Statuss</span></h2>
-                <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest mb-8">Ievadiet pieteikto tālruni</p>
-                <input type="text" id="drawer-phone" placeholder="2XXXXXXX" class="w-full p-5 bg-gray-50 border border-gray-100 rounded-2xl mb-4 outline-none focus:ring-2 focus:ring-red-600 text-center font-bold text-xl">
-                <button onclick="checkStatusInDrawer()" class="w-full bg-gray-900 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-red-600 shadow-xl transition-all">Meklēt datubāzē</button>
+    <div class="relative overflow-hidden bg-[#0a0a0a] border border-white/10 rounded-l-2xl px-4 py-8 shadow-2xl transition-all duration-500 group-hover:border-red-600/50 group-hover:bg-red-950/10">
+        
+        <div class="absolute -right-4 -top-4 w-12 h-12 bg-red-600/20 blur-xl rounded-full group-hover:bg-red-600/40"></div>
+
+        <div class="flex flex-col items-center gap-6">
+            <div class="relative flex items-center justify-center">
+                <div class="absolute inset-0 bg-red-600/20 rotate-45 scale-0 group-hover:scale-110 transition-transform duration-500"></div>
+                <span class="relative text-xl group-hover:text-red-500 transition-colors">🔍</span>
             </div>
-            <div id="drawer-result" class="mt-12 hidden">
-                <div class="relative flex flex-col gap-8 ml-4">
-                    <div class="absolute left-[19px] top-0 w-1 h-full bg-gray-100 z-0"></div>
-                    <div id="drawer-progress-line" class="absolute left-[19px] top-0 w-1 bg-red-600 z-0 transition-all duration-1000" style="height: 0%"></div>
-                    <div class="drawer-step flex items-center gap-4 relative z-10">
-                        <div class="drawer-dot w-10 h-10 rounded-full bg-gray-100 border-4 border-white flex items-center justify-center font-bold text-white shadow-sm transition-colors">1</div>
-                        <span class="text-xs font-black uppercase text-gray-400">Saņemts</span>
-                    </div>
-                    <div class="drawer-step flex items-center gap-4 relative z-10">
-                        <div class="drawer-dot w-10 h-10 rounded-full bg-gray-100 border-4 border-white flex items-center justify-center font-bold text-white shadow-sm transition-colors">2</div>
-                        <span class="text-xs font-black uppercase text-gray-400">Diagnostika</span>
-                    </div>
-                    <div class="drawer-step flex items-center gap-4 relative z-10">
-                        <div class="drawer-dot w-10 h-10 rounded-full bg-gray-100 border-4 border-white flex items-center justify-center font-bold text-white shadow-sm transition-colors">3</div>
-                        <span class="text-xs font-black uppercase text-gray-400">Remonts</span>
-                    </div>
-                    <div class="drawer-step flex items-center gap-4 relative z-10">
-                        <div class="drawer-dot w-10 h-10 rounded-full bg-gray-100 border-4 border-white flex items-center justify-center font-bold text-white shadow-sm transition-colors">4</div>
-                        <span class="text-xs font-black uppercase text-gray-400">Gatavs</span>
-                    </div>
-                </div>
-                <p id="drawer-status-name" class="mt-8 text-center font-black italic text-red-600 uppercase"></p>
+
+            <span class="[writing-mode:vertical-lr] rotate-180 uppercase font-black text-[9px] tracking-[0.5em] text-white/40 group-hover:text-white transition-colors">
+                REMONTA <span class="text-red-600/80">STATUSS</span>
+            </span>
+            
+            <div class="flex flex-col gap-1 opacity-20">
+                <div class="w-1 h-1 bg-white rounded-full"></div>
+                <div class="w-1 h-1 bg-white rounded-full"></div>
+                <div class="w-1 h-1 bg-red-600 rounded-full"></div>
             </div>
         </div>
     </div>
+</button>
 
-    <div id="drawerOverlay" class="hidden fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[190]" onclick="toggleStatusDrawer()"></div>
+    <div id="statusDrawer" class="fixed inset-y-0 right-0 w-full md:w-96 glass-nav z-[200] transform translate-x-full transition-transform duration-500 border-l border-white/10 p-6 flex flex-col overflow-y-auto custom-scrollbar">
+    
+    <button onclick="toggleStatusDrawer()" class="self-end text-white/20 hover:text-white text-3xl font-light">×</button>
+    
+    <div class="mt-4 text-center">
+        <h2 class="text-2xl font-black uppercase italic tracking-tighter mb-6">Pasūtījuma <span class="text-red-600">Statuss</span></h2>
+        
+        <input type="text" id="drawer-phone" placeholder="2XXXXXXX" 
+            class="input-dark w-full p-4 rounded-2xl mb-3 text-center font-black text-xl tracking-widest">
+        
+        <button onclick="checkStatusInDrawer()" 
+            class="w-full bg-white/5 hover:bg-white/10 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all mb-8">
+            Meklēt datubāzē
+        </button>
+    </div>
+
+   <div id="drawer-result" class="hidden px-2 pb-4 animate-in fade-in duration-500">
+    <div class="relative flex flex-col gap-6 ml-2 mb-8">
+        <div class="absolute left-[17px] top-2 w-[2px] h-[calc(100%-20px)] bg-white/5 z-0"></div>
+        <div id="drawer-progress-line" class="absolute left-[17px] top-2 w-[2px] bg-red-600 z-0 transition-all duration-1000" style="height: 0%"></div>
+        
+        <div class="flex items-center gap-4 relative z-10">
+            <div class="drawer-dot w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black transition-colors">1</div>
+            <span class="text-[10px] font-black uppercase text-white/20 tracking-widest">Saņemts</span>
+        </div>
+        <div class="flex items-center gap-4 relative z-10">
+            <div class="drawer-dot w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black transition-colors">2</div>
+            <span class="text-[10px] font-black uppercase text-white/20 tracking-widest">Diagnostika</span>
+        </div>
+        <div class="flex items-center gap-4 relative z-10">
+            <div class="drawer-dot w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black transition-colors">3</div>
+            <span class="text-[10px] font-black uppercase text-white/20 tracking-widest">Remonts</span>
+        </div>
+        <div class="flex items-center gap-4 relative z-10">
+            <div class="drawer-dot w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black transition-colors">4</div>
+            <span class="text-[10px] font-black uppercase text-white/20 tracking-widest">Gatavs</span>
+        </div>
+    </div>
+    
+    <div class="mt-4 pt-6 border-t border-white/5 text-center px-2">
+        <p id="drawer-status-name" class="font-black italic text-red-600 uppercase tracking-widest text-[13px] mb-2"></p>
+        <p id="drawer-status-desc" class="text-[10px] text-white/40 uppercase font-medium leading-relaxed tracking-wide"></p>
+    </div>
+</div>
+</div>
+
+<style>
+    /* Pievieno šo, lai scrollbar izskatītos smuki un būtu gandrīz neredzams */
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(220, 38, 38, 0.2); border-radius: 10px; }
+</style>
+
+    <div id="drawerOverlay" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[190]" onclick="toggleStatusDrawer()"></div>
 
     <script>
-    // 1. Modālo logu pārvaldība
-    function toggleModal() {
-        document.getElementById('bookingModal').classList.toggle('hidden');
-    }
+        // Saglabātas visas tavas funkcijas
+        function toggleModal() { document.getElementById('bookingModal').classList.toggle('hidden'); }
+        function toggleStatusDrawer() {
+            document.getElementById('statusDrawer').classList.toggle('translate-x-full');
+            document.getElementById('drawerOverlay').classList.toggle('hidden');
+        }
 
-    function toggleStatusDrawer() {
-        const drawer = document.getElementById('statusDrawer');
-        const overlay = document.getElementById('drawerOverlay');
-        drawer.classList.toggle('translate-x-full');
-        overlay.classList.toggle('hidden');
-    }
+        async function initBanner() {
+            const banner = document.getElementById('akcijas-josla');
+            const txt1 = document.getElementById('akcijas-teksts');
+            const txt2 = document.getElementById('akcijas-teksts-2');
+            try {
+                const res = await fetch('/api/settings/banner?t=' + Date.now());
+                const data = await res.json();
+                if (data.enabled) {
+                    banner.classList.remove('hidden');
+                    const zinja = data.text || "Akcija ir aktīva!"; 
+                    const kopejaisTeksts = " 🔥 " + zinja.toUpperCase() + " • ";
+                    txt1.innerText = kopejaisTeksts.repeat(10);
+                    txt2.innerText = kopejaisTeksts.repeat(10);
+                }
+            } catch (e) { console.error("Banner error:", e); }
+        }
 
-    function aizvertJoslu() { 
-        document.getElementById('akcijas-josla').classList.add('hidden'); 
-    }
+        async function checkStatusInDrawer() {
+    const phone = document.getElementById('drawer-phone').value;
+    const resultDiv = document.getElementById('drawer-result');
+    const line = document.getElementById('drawer-progress-line');
+    const dots = document.querySelectorAll('.drawer-dot');
+    const labels = document.querySelectorAll('#drawer-result span');
+    const nameDisplay = document.getElementById('drawer-status-name');
+    const descDisplay = document.getElementById('drawer-status-desc'); // Jaunais lauks
 
-    // 2. Banera statusa pārbaude no Admin paneļa
-    async function initBanner() {
-    const banner = document.getElementById('akcijas-josla');
-    const txt1 = document.getElementById('akcijas-teksts');
-    const txt2 = document.getElementById('akcijas-teksts-2');
-
-    if (!banner || !txt1 || !txt2) return;
+    // Definējam aprakstus
+    const statusDescriptions = {
+        "Saņemts": "Pieteikums ir veiksmīgi reģistrēts. Ierīce gaida rindā uz diagnostiku.",
+        "Diagnostika": "Meistars šobrīd veic padziļinātu ierīces pārbaudi un defektu noteikšanu.",
+        "Remonts": "Diagnostika pabeigta. Notiek tehnisko problēmu novēršana un detaļu maiņa.",
+        "Gatavs": "Viss kārtībā! Ierīce ir salabota, notestēta un gatava izsniegšanai.",
+        "Izsniegts": "Paldies, ka izvēlējāties mūs! Pasūtījums ir veiksmīgi noslēgts."
+    };
 
     try {
-        // Mēģinām ielādēt datus
-        const res = await fetch('/api/settings/banner?t=' + Date.now());
-        const data = await res.json();
+        const response = await fetch('/check-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `talrunis=${encodeURIComponent(phone)}`
+        });
+        const data = await response.json();
 
-        if (data.enabled) {
-            banner.classList.remove('hidden');
-            // Izmantojam data.text (pārliecinies, ka admin panelis sūta 'text')
-            const zinja = data.text || "Akcija ir aktīva!"; 
-            const kopejaisTeksts = " 🔥 " + zinja + " • ";
+        if (data.success) {
+            resultDiv.classList.remove('hidden');
             
-            txt1.innerText = kopejaisTeksts.repeat(15);
-            txt2.innerText = kopejaisTeksts.repeat(15);
-            console.log("Baneris ielādēts ar tekstu:", zinja);
+            // Atspoguļojam vārdu un statusu
+            nameDisplay.innerText = data.vards + " | " + data.statuss;
+            
+            // Ievietojam atbilstošo aprakstu
+            descDisplay.innerText = statusDescriptions[data.statuss] || "Sazinieties ar mums, lai uzzinātu vairāk.";
+
+            const statusMap = { "Saņemts": 0, "Diagnostika": 1, "Remonts": 2, "Gatavs": 3, "Izsniegts": 3 };
+            const currentStep = statusMap[data.statuss] ?? 0;
+
+            line.style.height = (currentStep / 3 * 100) + "%";
+            
+            dots.forEach((dot, i) => {
+                if (i <= currentStep) {
+                    dot.classList.add('bg-red-600', 'border-red-600');
+                    dot.classList.remove('bg-white/5', 'border-white/10');
+                    labels[i].classList.add('text-white');
+                    labels[i].classList.remove('text-white/20');
+                    dot.innerHTML = '✓';
+                } else {
+                    dot.classList.remove('bg-red-600', 'border-red-600');
+                    dot.classList.add('bg-white/5', 'border-white/10');
+                    labels[i].classList.remove('text-white');
+                    labels[i].classList.add('text-white/20');
+                    dot.innerHTML = i + 1;
+                }
+            });
         } else {
-            banner.classList.add('hidden');
+            alert(data.message);
         }
-    } catch (e) {
-        console.error("Kļūda ielādējot baneri:", e);
-        // Testa nolūkos vari šeit ieslēgt baneri, lai redzētu vai strādā:
-        // banner.classList.remove('hidden');
-        // txt1.innerText = "KĻŪDA SAVIENOJUMĀ • ".repeat(10);
-    }
+    } catch (e) { console.error(e); }
 }
 
-    // 3. Akcijas teksta ielāde
-    async function ieladetAkcijasTekstu() {
-        try {
-            const atbilde = await fetch('/api/config');
-            const dati = await atbilde.json();
-            if (dati && dati.akcija) {
-                const txt = " 🔥 " + dati.akcija + " • ";
-                document.getElementById('akcijas-teksts').innerText = txt.repeat(10);
-                document.getElementById('akcijas-teksts-2').innerText = txt.repeat(10);
+        document.getElementById('repairForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new URLSearchParams(new FormData(e.target));
+            const response = await fetch('/pieteikt-servisu', { method: 'POST', body: formData });
+            if (response.ok) {
+                toggleModal();
+                e.target.reset();
+                document.getElementById('thanksModal').classList.remove('hidden');
             }
-        } catch (e) { console.error(e); }
-    }
+        };
 
-    // 4. Statusa pārbaude klientam
-    async function checkStatusInDrawer() {
-        const phone = document.getElementById('drawer-phone').value;
-        const resultDiv = document.getElementById('drawer-result');
-        const line = document.getElementById('drawer-progress-line');
-        const dots = document.querySelectorAll('.drawer-dot');
-        const labels = document.querySelectorAll('.drawer-step span');
-        const nameDisplay = document.getElementById('drawer-status-name');
+        window.onload = initBanner;
+    </script>
 
-        try {
-            const response = await fetch('/check-status', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `talrunis=${encodeURIComponent(phone)}`
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                resultDiv.classList.remove('hidden');
-                nameDisplay.innerText = data.vards + " | " + data.statuss;
-                
-                const statusMap = { "Saņemts": 0, "Diagnostika": 1, "Remonts": 2, "Gatavs": 3, "Izsniegts": 3 };
-                const currentStep = statusMap[data.statuss] ?? 0;
-
-                line.style.height = (currentStep / 3 * 100) + "%";
-                dots.forEach((dot, i) => {
-                    if (i <= currentStep) {
-                        dot.classList.replace('bg-gray-100', 'bg-blue-600'); // Nomainīts uz zilo
-                        labels[i].classList.replace('text-gray-400', 'text-gray-900');
-                        dot.innerHTML = '✓';
-                    } else {
-                        dot.classList.replace('bg-blue-600', 'bg-gray-100');
-                        labels[i].classList.replace('text-gray-900', 'text-gray-400');
-                        dot.innerHTML = i + 1;
-                    }
-                });
-            } else {
-                alert(data.message);
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    // 5. Formas pieteikums
-    document.getElementById('repairForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const formData = new URLSearchParams(new FormData(e.target));
-        const response = await fetch('/pieteikt-servisu', {
-            method: 'POST',
-            body: formData
-        });
-        if (response.ok) {
-            toggleModal();
-            e.target.reset();
-            document.getElementById('thanksModal').classList.remove('hidden');
-        }
-    };
-
-    // 6. APVIENOTS IELĀDES SKRIPTS
-    window.onload = () => {
-        initBanner(); // Šī funkcija tagad kontrolē visu banera redzamību
-    };
-</script>
-
-    <footer class="bg-slate-950 text-slate-50 pt-16 pb-8 px-6 border-t border-slate-800">
+    <footer class="bg-black/80 border-t border-white/5 pt-16 pb-8 px-6 backdrop-blur-md">
     <div class="max-w-7xl mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             
             <div class="space-y-4">
-                <h2 class="text-2xl font-black italic tracking-tighter uppercase leading-none">
-                    ARCUS <span class="text-blue-500">TĪKLS</span>
-                </h2>
-                <p class="text-slate-400 text-xs leading-relaxed uppercase font-bold tracking-wider">
-                    Profesionāls datoru serviss un IT risinājumi Liepājā kopš 2000. gada. Tavs tehnoloģiju partneris.
-                </p>
-            </div>
-
-            <div class="space-y-4">
-                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Atrodas</p>
+                <p class="text-[10px] font-black text-red-600 uppercase tracking-[0.3em]">Atrašanās vieta</p>
                 <div class="flex items-start gap-3">
-                    <span class="text-blue-500 mt-1">📍</span>
+                    <span class="text-red-600 mt-1">📍</span>
                     <div class="text-sm">
-                        <p class="font-bold uppercase italic">Graudu 43</p>
-                        <p class="text-slate-400 font-medium">Ieeja no Pasta ielas</p>
-                        <p class="text-slate-500">Liepāja, Latvija</p>
+                        <p class="font-bold text-white uppercase italic">Graudu 43</p>
+                        <p class="text-white/40 font-medium">(Ieeja no Pasta ielas)</p>
+                        <p class="text-white/40">Liepāja, Latvija</p>
                     </div>
                 </div>
             </div>
 
             <div class="space-y-4">
-                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Saziņai</p>
-                <div class="space-y-2 text-sm font-bold">
-                    <a href="tel:63423119" class="block hover:text-blue-500 transition-colors tracking-tight">📞 634 23119</a>
-                    <a href="tel:20364560" class="block hover:text-blue-500 transition-colors tracking-tight">📱 203 64560</a>
-                    <a href="mailto:arcustikls@gmail.com" class="block text-slate-400 hover:text-white transition-colors lowercase italic">✉️ arcustikls@gmail.com</a>
+                <p class="text-[10px] font-black text-red-600 uppercase tracking-[0.3em]">Saziņai</p>
+                <div class="space-y-3 text-sm">
+                    <a href="tel:63423119" class="block text-white hover:text-red-500 transition-colors font-bold tracking-tight">
+                        📞 634 23119
+                    </a>
+                    <a href="tel:20364560" class="block text-white hover:text-red-500 transition-colors font-bold tracking-tight">
+                        📱 203 64560
+                    </a>
+                    <a href="mailto:arcustikls@gmail.com" class="block text-white/40 hover:text-white transition-colors lowercase italic text-xs">
+                        ✉️ arcustikls@gmail.com
+                    </a>
                 </div>
             </div>
 
             <div class="space-y-4">
-                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Darba laiks</p>
-                <div class="text-xs space-y-2 font-bold uppercase italic">
-                    <div class="flex justify-between border-b border-slate-800 pb-1">
-                        <span class="text-slate-500">P-P</span>
-                        <span>9:00 - 18:00</span>
+                <p class="text-[10px] font-black text-red-600 uppercase tracking-[0.3em]">Darba laiks</p>
+                <div class="text-xs space-y-2">
+                    <div class="flex justify-between border-b border-white/5 pb-2">
+                        <span class="text-white/40 font-bold uppercase tracking-widest">Pirmdiena - Piektdiena</span>
+                        <span class="text-white font-black italic">9:00 - 18:00</span>
                     </div>
-                    <div class="flex justify-between border-b border-slate-800 pb-1">
-                        <span class="text-slate-500">S.</span>
-                        <span>10:00 - 16:00</span>
+                    <div class="flex justify-between border-b border-white/5 pb-2">
+                        <span class="text-white/40 font-bold uppercase tracking-widest">Sestdiena</span>
+                        <span class="text-white font-black italic">10:00 - 16:00</span>
                     </div>
-                    <div class="flex justify-between opacity-30">
-                        <span class="text-slate-500">Sv.</span>
-                        <span class="text-red-400">Slēgts</span>
+                    <div class="flex justify-between text-red-600/50">
+                        <span class="uppercase font-bold tracking-widest">Svētdiena</span>
+                        <span class="font-black italic">SLĒGTS</span>
                     </div>
                 </div>
             </div>
 
         </div>
 
-        <div class="pt-8 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p class="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">
-                &copy; 2026 ARCUS TĪKLS. Visas tiesības aizsargātas.
+        <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-[9px] font-bold text-white/20 uppercase tracking-[0.2em]">
+                © 2026 ARCUS TĪKLS. Visas tiesības aizsargātas.
             </p>
             <div class="flex gap-6">
-                <a href="#" class="text-[9px] font-bold text-slate-600 hover:text-blue-500 transition-colors uppercase tracking-widest">Privātuma politika</a>
-                <a href="/admin" class="text-[9px] font-bold text-slate-600 hover:text-red-600 transition-colors uppercase tracking-widest">Admin Panelis</a>
+                <a href="/admin" class="text-[9px] font-bold text-white/20 hover:text-red-600 transition-colors uppercase tracking-widest">Admin Panelis</a>
             </div>
         </div>
     </div>
 </footer>
+
+<div class="flex justify-center gap-4 py-8">
+    
+    <a href="https://instagram.com/tavs_profils" target="_blank" 
+       class="w-12 h-12 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm hover:shadow-md hover:scale-110 transition-all duration-300 group">
+        <svg class="w-6 h-6 text-slate-700 group-hover:text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.332 3.608 1.308.975.975 1.247 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.332 2.633-1.308 3.608-.975.975-2.242 1.247-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.332-3.608-1.308-.975-.975-1.247-2.242-1.308-3.608-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.062-1.366.332-2.633 1.308-3.608.975-.975 2.242-1.247 3.608-1.308 1.266-.058 1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072s3.667-.014 4.947-.072c4.358-.2 6.78-2.618 6.98-6.98.058-1.281.072-1.689.072-4.948s-.014-3.667-.072-4.947c-.2-4.358-2.618-6.78-6.98-6.98-1.281-.058-1.689-.072-4.948-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+    </a>
+
+    <a href="https://tiktok.com/@tavs_profils" target="_blank" 
+   class="w-12 h-12 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm hover:shadow-md hover:scale-110 transition-all duration-300 group">
+    <svg class="w-7 h-7 text-slate-700 group-hover:text-black" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12.53.02C13.84 0 15.11.2 16.31.58c0 3.44 0 6.88 0 10.32-1.42-.94-3.13-1.49-4.97-1.49-4.45 0-8.06 3.61-8.06 8.06s3.61 8.06 8.06 8.06 8.06-3.61 8.06-8.06V0h-2.87zM12.53 21.01c-2.79 0-5.06-2.27-5.06-5.06s2.27-5.06 5.06-5.06 5.06 2.27 5.06 5.06-2.27 5.06-5.06 5.06zM22.5 6.51c-2.13 0-4.04-1.01-5.26-2.58V7.5c1.22 1.57 3.13 2.58 5.26 2.58V6.51z"/>
+    </svg>
+</a>
+
+    <a href="https://facebook.com/tava_lapa" target="_blank" 
+       class="w-12 h-12 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm hover:shadow-md hover:scale-110 transition-all duration-300 group">
+        <svg class="w-6 h-6 text-slate-700 group-hover:text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+    </a>
+
+</div>
 
 </body>
 </html>
