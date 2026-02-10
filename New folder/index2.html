@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+    <title>Audi A6 C6 Premium Portāls</title>
+    <style>
+        :root { --ss-blue: #003399; --ss-orange: #FF9900; --ss-light: #f0f5ff; }
+        body { background: #f4f4f4; font-family: Arial, sans-serif; margin: 0; padding: 5px; }
+        .wrapper { max-width: 1200px; margin: 0 auto; background: white; border: 1px solid #ccc; min-height: 100vh; }
+        
+        /* Header & Auth */
+        .header { background: var(--ss-blue); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .auth-card { width: 320px; margin: 50px auto; padding: 25px; border: 1px solid #ccc; background: #fafafa; text-align: center; }
+        
+        /* Search & Filters */
+        .filter-section { background: var(--ss-light); padding: 15px; border-bottom: 1px solid #ccc; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+        .filter-section input, .filter-section select { padding: 5px; border: 1px solid #bbb; }
+
+        /* Form */
+        #adForm { display: none; padding: 20px; background: #f9f9f9; border-bottom: 3px solid var(--ss-blue); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #eee; text-align: left; padding: 10px; border-bottom: 2px solid var(--ss-blue); font-size: 12px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: top; }
+        .ad-row:hover { background: #fdfdfd; cursor: pointer; }
+        .ad-img { width: 120px; height: 80px; object-fit: cover; border: 1px solid #ccc; }
+        .price { font-weight: bold; color: #000; text-align: right; }
+
+        .btn { padding: 8px 15px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-blue { background: var(--ss-blue); color: white; }
+        .btn-orange { background: var(--ss-orange); color: white; }
+        
+        .hidden { display: none !important; }
+        .params { font-size: 11px; color: #666; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header">
+        <div style="font-size:24px; font-weight:bold" onclick="location.reload()">SS.LV AUDI A6</div>
+        <div id="userHeader"></div>
+    </div>
+
+    <div id="authView">
+        <div class="auth-card">
+            <h3>Autorizācija</h3>
+            <input type="text" id="username" placeholder="Lietotājvārds" style="width:100%; padding:8px; margin-bottom:10px;">
+            <input type="password" id="password" placeholder="Parole" style="width:100%; padding:8px; margin-bottom:10px;">
+            <button class="btn btn-blue" style="width:100%" onclick="processAuth()">Ienākt</button>
+        </div>
+    </div>
+
+    <div id="mainContent" class="hidden">
+        <div class="filter-section">
+            <input type="text" id="fText" onkeyup="renderAds()" placeholder="Meklēt tekstā...">
+            <select id="fGear" onchange="renderAds()">
+                <option value="">Visas kārbas</option>
+                <option value="Automāts">Automāts</option>
+                <option value="Manuālā">Manuālā</option>
+            </select>
+            <select id="fType" onchange="renderAds()">
+                <option value="">Visi virsbūves tipi</option>
+                <option value="Sedans">Sedans</option>
+                <option value="Universāls">Universāls</option>
+            </select>
+            <button class="btn btn-orange" onclick="toggleForm()">+ Pievienot</button>
+        </div>
+
+        <div id="adForm">
+            <h4>Jauns sludinājums</h4>
+            <div class="form-grid">
+                <div>
+                    <input type="text" id="adTitle" placeholder="Modelis (piem. Audi A6 C6)">
+                    <input type="text" id="adPrice" placeholder="Cena (€)">
+                    <input type="number" id="adYear" placeholder="Gads">
+                    <input type="number" id="adKm" placeholder="Nobraukums (km)">
+                </div>
+                <div>
+                    <select id="adGear">
+                        <option value="Automāts">Automāts</option>
+                        <option value="Manuālā">Manuālā</option>
+                    </select>
+                    <select id="adType">
+                        <option value="Sedans">Sedans</option>
+                        <option value="Universāls">Universāls</option>
+                    </select>
+                    <input type="text" id="adEngine" placeholder="Dzinējs (piem. 2.7 TDI CANA)">
+                    <input type="file" id="adFile" accept="image/*">
+                </div>
+            </div>
+            <button class="btn btn-blue" onclick="saveAd()">Publicēt</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Apraksts</th>
+                    <th width="100">Gads</th>
+                    <th width="100">Nobraukums</th>
+                    <th width="100" style="text-align:right">Cena</th>
+                </tr>
+            </thead>
+            <tbody id="adListBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const defaultAds = [
+        { id: 1, title: "Audi A6 C6 Facelift", price: "7950 €", year: 2010, km: 280000, gear: "Automāts", type: "Sedans", engine: "2.7 TDI (CANA)", img: "", owner: "admin" },
+        { id: 2, title: "Audi A6 Avant Quattro", price: "8200 €", year: 2009, km: 310000, gear: "Automāts", type: "Universāls", engine: "3.0 TDI (ASB)", img: "", owner: "admin" },
+        { id: 3, title: "Audi A6 C6 S-Line", price: "6500 €", year: 2007, km: 350000, gear: "Manuālā", type: "Sedans", engine: "2.7 TDI (BPP)", img: "", owner: "admin" },
+        { id: 4, title: "Audi A6 Ultra Clean", price: "9800 €", year: 2011, km: 195000, gear: "Automāts", type: "Sedans", engine: "3.0 TDI (CDYA)", img: "", owner: "admin" },
+        { id: 5, title: "Audi A6 Ekonomisks", price: "5400 €", year: 2006, km: 400000, gear: "Manuālā", type: "Universāls", engine: "2.0 TDI (BRE)", img: "", owner: "admin" },
+        { id: 6, title: "Audi A6 C6 CANA High Spec", price: "8700 €", year: 2010, km: 240000, gear: "Automāts", type: "Sedans", engine: "2.7 TDI (CANA)", img: "", owner: "admin" },
+        { id: 7, title: "Audi A6 Allroad", price: "7200 €", year: 2008, km: 290000, gear: "Automāts", type: "Universāls", engine: "3.0 TDI", img: "", owner: "admin" },
+        { id: 8, title: "Audi A6 Facelift LED", price: "8900 €", year: 2010, km: 220000, gear: "Automāts", type: "Universāls", engine: "2.7 TDI", img: "", owner: "admin" },
+        { id: 9, title: "Audi A6 C6 Manuāls", price: "4900 €", year: 2005, km: 380000, gear: "Manuālā", type: "Sedans", engine: "2.4 Benzīns", img: "", owner: "admin" },
+        { id: 10, title: "Audi A6 Exclusive", price: "11500 €", year: 2011, km: 150000, gear: "Automāts", type: "Sedans", engine: "3.0 TFSI", img: "", owner: "admin" }
+    ];
+
+    let ads = JSON.parse(localStorage.getItem('ss_ads_final')) || defaultAds;
+    let currentUser = JSON.parse(sessionStorage.getItem('ss_session'));
+
+    function processAuth() {
+        const u = document.getElementById('username').value;
+        if(u) {
+            currentUser = { name: u, role: u === 'admin' ? 'admin' : 'user' };
+            sessionStorage.setItem('ss_session', JSON.stringify(currentUser));
+            init();
+        }
+    }
+
+    function renderAds() {
+        const list = document.getElementById('adListBody');
+        const fT = document.getElementById('fText').value.toLowerCase();
+        const fG = document.getElementById('fGear').value;
+        const fTy = document.getElementById('fType').value;
+
+        list.innerHTML = '';
+        ads.filter(a => 
+            (a.title.toLowerCase().includes(fT) || a.engine.toLowerCase().includes(fT)) &&
+            (fG === "" || a.gear === fG) &&
+            (fTy === "" || a.type === fTy)
+        ).forEach(ad => {
+            list.innerHTML += `
+                <tr class="ad-row">
+                    <td><img src="${ad.img || 'https://via.placeholder.com/120x80?text=Audi+A6'}" class="ad-img"></td>
+                    <td>
+                        <div style="color:var(--ss-blue); font-weight:bold">${ad.title}</div>
+                        <div class="params">${ad.engine} | ${ad.gear} | ${ad.type}</div>
+                    </td>
+                    <td>${ad.year}</td>
+                    <td>${ad.km} km</td>
+                    <td class="price">${ad.price}</td>
+                </tr>`;
+        });
+    }
+
+    async function saveAd() {
+        const file = document.getElementById('adFile').files[0];
+        let base64 = "";
+        if(file) {
+            base64 = await new Promise(r => {
+                const reader = new FileReader();
+                reader.onload = e => r(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        const newAd = {
+            id: Date.now(),
+            title: document.getElementById('adTitle').value,
+            price: document.getElementById('adPrice').value + " €",
+            year: document.getElementById('adYear').value,
+            km: document.getElementById('adKm').value,
+            gear: document.getElementById('adGear').value,
+            type: document.getElementById('adType').value,
+            engine: document.getElementById('adEngine').value,
+            img: base64,
+            owner: currentUser.name
+        };
+        ads.unshift(newAd);
+        localStorage.setItem('ss_ads_final', JSON.stringify(ads));
+        location.reload();
+    }
+
+    function toggleForm() { document.getElementById('adForm').classList.toggle('hidden'); }
+    function logout() { sessionStorage.clear(); location.reload(); }
+
+    function init() {
+        if(currentUser) {
+            document.getElementById('authView').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            document.getElementById('userHeader').innerHTML = `Sveiki, ${currentUser.name} | <span onclick="logout()" style="cursor:pointer">Iziet</span>`;
+            renderAds();
+        }
+    }
+    init();
+</script>
+</body>
+</html>

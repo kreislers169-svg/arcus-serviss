@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+    <title>Audi A6 C6 Pro Hub - Final Edition</title>
+    <style>
+        :root { --ss-blue: #003399; --ss-orange: #FF9900; --ss-red: #dc3545; --ss-green: #28a745; --ss-bg: #f0f2f5; }
+        body { background: var(--ss-bg); font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; }
+        .wrapper { max-width: 1200px; margin: 0 auto; background: white; min-height: 100vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        
+        .header { background: var(--ss-blue); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--ss-orange); }
+        .nav-menu { background: #e9ecef; padding: 10px 25px; display: flex; gap: 20px; border-bottom: 1px solid #ccc; font-weight: bold; }
+        .nav-item { cursor: pointer; color: var(--ss-blue); font-size: 14px; }
+        
+        .admin-badge { background: var(--ss-red); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
+        .status-msg { padding: 15px; margin-bottom: 20px; border-radius: 5px; text-align: center; font-weight: bold; display: none; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
+        .section { padding: 25px; display: none; }
+        .active-section { display: block; }
+
+        #authSection { flex-grow: 1; display: flex; align-items: center; justify-content: center; background: #e9ecef; }
+        .auth-card { width: 380px; padding: 35px; background: white; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid var(--ss-blue); }
+        .auth-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+
+        .ad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .ad-card { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: #fff; cursor: pointer; transition: 0.2s; }
+        .ad-card:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .ad-card img { width: 100%; height: 180px; object-fit: cover; }
+        .ad-info { padding: 15px; }
+
+        /* Detalizētais skats */
+        .ad-detail-view { display: grid; grid-template-columns: 1fr 400px; gap: 30px; }
+        .detail-img { width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .info-sidebar { background: #f8f9fa; padding: 25px; border-radius: 10px; border: 1px solid #ddd; }
+        .service-list { background: #fff; border-left: 4px solid var(--ss-blue); padding: 15px; margin-top: 20px; }
+
+        .form-container { max-width: 600px; background: #f9f9f9; padding: 25px; border: 1px solid #ddd; border-radius: 10px; }
+        .form-container input, .form-container textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .admin-table th, .admin-table td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+
+        .btn { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-blue { background: var(--ss-blue); color: white; }
+        .btn-orange { background: var(--ss-orange); color: white; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header">
+        <div style="font-size:22px; font-weight:bold; cursor:pointer" onclick="showSection('home')">AUDI A6 C6 PORTĀLS</div>
+        <div id="userHeader">Viesis</div>
+    </div>
+
+    <div id="mainNav" class="nav-menu hidden">
+        <div class="nav-item" onclick="showSection('home')">Sludinājumi</div>
+        <div class="nav-item" onclick="showSection('wiki')">Dzinēju Wiki</div>
+        <div id="adminNavItem" class="nav-item hidden" style="color:var(--ss-red)" onclick="showSection('admin')">🛡️ Admin Panelis</div>
+    </div>
+
+    <div id="authSection" class="section active-section">
+        <div class="auth-card">
+            <h2 id="authTitle" style="text-align:center;">Pieslēgties</h2>
+            <div id="loginFields">
+                <input type="text" id="lUser" placeholder="Lietotājvārds">
+                <input type="password" id="lPass" placeholder="Parole">
+                <button class="btn btn-blue" style="width:100%" onclick="login()">Ienākt</button>
+            </div>
+            <div id="registerFields" class="hidden">
+                <input type="text" id="rUser" placeholder="Lietotājvārds">
+                <input type="email" id="rEmail" placeholder="E-pasts">
+                <input type="text" id="rPhone" placeholder="Tālrunis (+371...)">
+                <input type="password" id="rPass" placeholder="Parole">
+                <button class="btn btn-orange" style="width:100%" onclick="register()">Reģistrēties</button>
+            </div>
+            <p style="text-align:center; cursor:pointer; font-size:13px; color:var(--ss-blue); margin-top:15px;" onclick="toggleAuth()">
+                <span id="authToggleText">Nav konta? Reģistrējies!</span>
+            </p>
+        </div>
+    </div>
+
+    <div id="home" class="section">
+        <div id="successMsg" class="status-msg success">Sludinājums veiksmīgi pievienots!</div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <h2>Aktuālie piedāvājumi</h2>
+            <button class="btn btn-orange" onclick="showSection('addAd')">+ Pievienot Auto</button>
+        </div>
+        <div class="ad-grid" id="adList"></div>
+    </div>
+
+    <div id="detailView" class="section">
+        <button class="btn" style="background:#eee; margin-bottom:20px;" onclick="showSection('home')">← Atpakaļ uz sarakstu</button>
+        <div id="adDetailsContent"></div>
+    </div>
+
+    <div id="addAd" class="section">
+        <h2>Jauns sludinājums</h2>
+        <div class="form-container">
+            <input type="text" id="adTitle" placeholder="Virsraksts (piem. Audi A6 2.7tdi CANA)">
+            <input type="number" id="adPrice" placeholder="Cena (€)">
+            <input type="number" id="adYear" placeholder="Gads (2010)">
+            <input type="text" id="adEngine" placeholder="Dzinējs (CANA)">
+            <input type="month" id="adTA" title="TA līdz">
+            <input type="file" id="adFile" accept="image/*">
+            <textarea id="adService" placeholder="Servisa vēsture (atdali ar komatu)"></textarea>
+            <button class="btn btn-blue" style="width:100%" onclick="saveNewAd()">Publicēt</button>
+        </div>
+    </div>
+
+    <div id="admin" class="section">
+        <h2 style="color:var(--ss-red)">🛡️ Administratora vadība</h2>
+        <table class="admin-table">
+            <thead><tr><th>Lietotājs</th><th>Kontakti</th><th>Statuss</th><th>Darbības</th></tr></thead>
+            <tbody id="adminTableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="wiki" class="section">
+        <h2>Audi A6 C6 Bibliotēka</h2>
+        <div style="background:#fff; padding:20px; border:1px solid #ddd;">
+            <p><b>Informācija par CANA dzinēju:</b> 2.7 TDI V6, 140 kW. Ražots Facelift modeļiem.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let users = JSON.parse(localStorage.getItem('audi_v7_users')) || [
+        { name: 'admin', pass: 'admin123', email: 'admin@audi.lv', phone: '+37100000000', role: 'admin', blocked: false }
+    ];
+    let ads = JSON.parse(localStorage.getItem('audi_v7_ads')) || [
+        { id: 1, title: "Audi A6 2.7 TDI CANA 2010", price: 7950, year: 2010, engine: "CANA", ta: "2026-05", owner: "admin", service: ["Eļļas maiņa pie 280k", "Jaunas bremzes"], img: "" }
+    ];
+    let currentUser = JSON.parse(sessionStorage.getItem('audi_v7_session'));
+    let isRegisterMode = false;
+
+    // --- AUTH ---
+    function toggleAuth() {
+        isRegisterMode = !isRegisterMode;
+        document.getElementById('authTitle').innerText = isRegisterMode ? "Reģistrācija" : "Pieslēgties";
+        document.getElementById('loginFields').classList.toggle('hidden', isRegisterMode);
+        document.getElementById('registerFields').classList.toggle('hidden', !isRegisterMode);
+    }
+
+    function login() {
+        const u = document.getElementById('lUser').value;
+        const p = document.getElementById('lPass').value;
+        const user = users.find(x => x.name === u && x.pass === p);
+        if(user) {
+            if(user.blocked) return alert("Konts bloķēts!");
+            currentUser = user;
+            sessionStorage.setItem('audi_v7_session', JSON.stringify(user));
+            checkUI();
+        } else alert("Kļūda!");
+    }
+
+    function register() {
+        const u = document.getElementById('rUser').value;
+        const e = document.getElementById('rEmail').value;
+        const p = document.getElementById('rPhone').value;
+        const pass = document.getElementById('rPass').value;
+        if(u && pass && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && /^\+371[0-9]{8}$/.test(p)) {
+            users.push({ name: u, pass: pass, email: e, phone: p, role: 'user', blocked: false });
+            localStorage.setItem('audi_v7_users', JSON.stringify(users));
+            alert("Gatavs!"); toggleAuth();
+        } else alert("Dati neatbilst formātam!");
+    }
+
+    function logout() { sessionStorage.clear(); location.reload(); }
+
+    // --- UI ---
+    function checkUI() {
+        if(currentUser) {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('mainNav').classList.remove('hidden');
+            const isAdmin = currentUser.role === 'admin';
+            document.getElementById('userHeader').innerHTML = `
+                <span><b>${currentUser.name}</b> ${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}</span>
+                <button class="btn btn-orange" style="padding:5px 10px; margin-left:10px;" onclick="logout()">Iziet</button>
+            `;
+            if(isAdmin) document.getElementById('adminNavItem').classList.remove('hidden');
+            showSection('home');
+        }
+    }
+
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
+        document.getElementById(id).classList.add('active-section');
+        if(id === 'home') renderAds();
+        if(id === 'admin') renderAdmin();
+    }
+
+    // --- ADS LOGIC ---
+    function renderAds() {
+        const list = document.getElementById('adList');
+        list.innerHTML = ads.map(ad => `
+            <div class="ad-card" onclick="openAd(${ad.id})">
+                <img src="${ad.img || 'https://via.placeholder.com/400x200?text=Audi+A6'}">
+                <div class="ad-info">
+                    <div style="font-weight:bold; color:var(--ss-blue)">${ad.title}</div>
+                    <div style="font-size:12px;">${ad.year} gads • ${ad.engine}</div>
+                    <div style="font-weight:bold; font-size:18px; margin-top:5px;">${ad.price} €</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function openAd(id) {
+        const ad = ads.find(a => a.id === id);
+        showSection('detailView');
+        document.getElementById('adDetailsContent').innerHTML = `
+            <div class="ad-detail-view">
+                <div>
+                    <img src="${ad.img || 'https://via.placeholder.com/800x500?text=Audi+A6'}" class="detail-img">
+                    <h3>Tehniskais apraksts</h3>
+                    <p>Šis Audi A6 C6 ir aprīkots ar ${ad.engine} dzinēju. Auto ir labā stāvoklī un gatavs braukšanai.</p>
+                    <div class="service-list">
+                        <h4>🔧 Veiktie servisa darbi:</h4>
+                        <ul>${ad.service.length ? ad.service.map(s => `<li>${s}</li>`).join('') : 'Nav norādīti.'}</ul>
+                    </div>
+                </div>
+                <div class="info-sidebar">
+                    <h2 style="margin-top:0">${ad.price} €</h2>
+                    <hr>
+                    <p><b>Gads:</b> ${ad.year}</p>
+                    <p><b>Dzinējs:</b> ${ad.engine}</p>
+                    <p><b>TA līdz:</b> ${ad.ta || 'Nav datu'}</p>
+                    <p><b>Pārdevējs:</b> ${ad.owner}</p>
+                    <button class="btn btn-blue" style="width:100%; margin-top:20px;">Sazināties</button>
+                </div>
+            </div>
+        `;
+    }
+
+    async function saveNewAd() {
+        const file = document.getElementById('adFile').files[0];
+        let b64 = "";
+        if(file) b64 = await new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsDataURL(file); });
+
+        const newAd = {
+            id: Date.now(),
+            title: document.getElementById('adTitle').value,
+            price: document.getElementById('adPrice').value,
+            year: document.getElementById('adYear').value,
+            engine: document.getElementById('adEngine').value,
+            ta: document.getElementById('adTA').value,
+            service: document.getElementById('adService').value.split(','),
+            img: b64,
+            owner: currentUser.name
+        };
+
+        if(!newAd.title || !newAd.price) return alert("Lūdzu aizpildi virsrakstu un cenu!");
+
+        ads.unshift(newAd);
+        localStorage.setItem('audi_v7_ads', JSON.stringify(ads));
+        
+        const msg = document.getElementById('successMsg');
+        msg.style.display = 'block';
+        showSection('home');
+        setTimeout(() => msg.style.display = 'none', 3000);
+    }
+
+    function renderAdmin() {
+        const body = document.getElementById('adminTableBody');
+        body.innerHTML = users.filter(u => u.name !== 'admin').map(u => `
+            <tr style="background:${u.blocked ? '#fff0f0' : '#fff'}">
+                <td>${u.name}</td>
+                <td>${u.email}<br>${u.phone}</td>
+                <td style="color:${u.blocked ? 'red' : 'green'}">${u.blocked ? 'BLOĶĒTS' : 'AKTĪVS'}</td>
+                <td>
+                    <button class="btn btn-orange" style="padding:5px;" onclick="toggleUser('${u.name}')">Bloķēt/Atbloķēt</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function toggleUser(name) {
+        users = users.map(u => u.name === name ? {...u, blocked: !u.blocked} : u);
+        localStorage.setItem('audi_v7_users', JSON.stringify(users));
+        renderAdmin();
+    }
+
+    checkUI();
+</script>
+</body>
+</html>
