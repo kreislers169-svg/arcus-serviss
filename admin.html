@@ -292,7 +292,7 @@ function handleSearch() {
     const query = document.getElementById('searchInput').value.toLowerCase();
     
     if (query === "") {
-        renderOrders(allOrders);
+        renderOrders(allOrders, false); // Parasts skats
         return;
     }
 
@@ -302,30 +302,41 @@ function handleSearch() {
         (o.epasts && o.epasts.toLowerCase().includes(query))
     );
     
-    renderOrders(filtered);
+    renderOrders(filtered, true); // Meklēšanas režīms - rāda visu atrasto
 }
 
-        function renderOrders(orders) {
-            columns.forEach(col => document.getElementById(col).innerHTML = '');
-            const recentContainer = document.getElementById('RecentOrders');
-            if(recentContainer) recentContainer.innerHTML = '';
-            
-            const dismissed = JSON.parse(localStorage.getItem('dismissedOrders') || '[]');
-            const recentOrders = [...orders].reverse().filter(o => !dismissed.includes(o.id) && o.statuss === 'Saņemts').slice(0, 3);
-            
-            const alertsDiv = document.getElementById('recent-alerts');
-            if (recentOrders.length > 0) {
-                alertsDiv.classList.remove('hidden');
-                recentOrders.forEach(o => recentContainer.insertAdjacentHTML('beforeend', createCardHtml(o, true)));
-            } else {
-                alertsDiv.classList.add('hidden');
-            }
+        function renderOrders(orders, isSearch = false) {
+    // Notīrām kolonnas
+    columns.forEach(col => document.getElementById(col).innerHTML = '');
+    const recentContainer = document.getElementById('RecentOrders');
+    if(recentContainer) recentContainer.innerHTML = '';
+    
+    const dismissed = JSON.parse(localStorage.getItem('dismissedOrders') || '[]');
+    const alertsDiv = document.getElementById('recent-alerts');
 
-            orders.forEach(o => {
-                const targetCol = document.getElementById(o.statuss);
-                if (targetCol) targetCol.insertAdjacentHTML('beforeend', createCardHtml(o, false));
-            });
+    // Ja tā NAV meklēšana, rādām "Jauno pieteikumu" joslu
+    if (!isSearch) {
+        const recentOrders = [...orders].reverse()
+            .filter(o => !dismissed.includes(o.id) && o.statuss === 'Saņemts')
+            .slice(0, 3);
+            
+        if (recentOrders.length > 0) {
+            alertsDiv.classList.remove('hidden');
+            recentOrders.forEach(o => recentContainer.insertAdjacentHTML('beforeend', createCardHtml(o, true)));
+        } else {
+            alertsDiv.classList.add('hidden');
         }
+    } else {
+        // Meklēšanas laikā paslēpjam "Jauno pieteikumu" joslu, lai netraucē
+        alertsDiv.classList.add('hidden');
+    }
+
+    // Izvietojam visus pasūtījumus pa kolonnām
+    orders.forEach(o => {
+        const targetCol = document.getElementById(o.statuss);
+        if (targetCol) targetCol.insertAdjacentHTML('beforeend', createCardHtml(o, false));
+    });
+}
 
         function createCardHtml(order, isHighlighted) {
             const shadow = isHighlighted ? 'shadow-red-200' : 'shadow-sm';
