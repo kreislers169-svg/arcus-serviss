@@ -11,6 +11,37 @@
         .sortable-ghost { opacity: 0.3; background: #fee2e2; border: 2px dashed #ef4444; }
         .kanban-container::-webkit-scrollbar { height: 8px; }
         .kanban-container::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+		
+		/* --- ADMIN PANELIS MOBILAJĀM IERĪCĒM --- */
+@media screen and (max-width: 768px) {
+    /* Kanban dēlis vairs nav horizontāls, bet kolonnas iet viena zem otras */
+    .kanban-board {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 10px;
+    }
+
+    /* Katra kolonna aizņem pilnu ekrāna platumu */
+    .kanban-column {
+        width: 100% !important;
+        min-height: 150px;
+    }
+
+    /* Pieteikumu kartītes padarām nedaudz lielākas, lai vieglāk uzklikšķināt */
+    .order-card {
+        padding: 15px;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+    /* Virsraksti Admin panelī */
+    h1 {
+        font-size: 20px;
+        text-align: center;
+    }
+}
+		
     </style>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
