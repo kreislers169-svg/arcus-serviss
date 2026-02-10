@@ -1,24 +1,43 @@
 [
   {
-    "id": "1770756871608",
-    "vards": "Pēteris",
-    "talrunis": "20202020",
-    "email": "man@inbox.lv",
-    "pakalpojums": "🛠️ Sarežģīti Remonti",
-    "apraksts": "Dators neslēdzas iekšā",
-    "statuss": "Gatavs",
-    "datums": "10.02.2026. 21:54:31",
-    "meistars": "Juris"
+    "id": "1770761660087",
+    "vards": "Toms",
+    "talrunis": "20430183",
+    "email": "nav@inbox.lv",
+    "pakalpojums": "🔍 Pilna Diagnostika",
+    "apraksts": "",
+    "statuss": "Remonts",
+    "datums": "10.02.2026. 23:14:20",
+    "meistars": "Māris"
   },
   {
-    "id": "1770758417100",
+    "id": "1770762680232",
     "vards": "Toms",
-    "talrunis": "00000000",
+    "talrunis": "20430183",
     "email": "toms@inbox.lv",
-    "pakalpojums": "💿 OS & Programmas",
-    "apraksts": "sdfsfdfsf",
-    "statuss": "Remonts",
-    "datums": "10.02.2026. 22:20:17",
-    "meistars": "Andris"
+    "pakalpojums": "🔍 Pilna Diagnostika",
+    "apraksts": "fsdfsdf",
+    "statuss": "Gatavs",
+    "datums": "10.02.2026. 23:31:20"
+  },
+  {
+    "id": "1770762704816",
+    "vards": "Toms",
+    "talrunis": "20430183",
+    "email": "kreisle@inbox.lv",
+    "pakalpojums": "🔍 Pilna Diagnostika",
+    "apraksts": "fsdfsdf",
+    "statuss": "Saņemts",
+    "datums": "10.02.2026. 23:31:44"
+  },
+  {
+    "id": "1770762977808",
+    "vards": "Toms",
+    "talrunis": "20430183",
+    "email": "k@inbox.lv",
+    "pakalpojums": "🔍 Pilna Diagnostika",
+    "apraksts": "sfdsdf",
+    "statuss": "Saņemts",
+    "datums": "10.02.2026. 23:36:17"
   }
 ]

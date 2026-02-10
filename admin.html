@@ -222,31 +222,93 @@
         let currentOpenOrderId = null;
         let currentOrderId = null;
         let activeMasterFilter = 'all';
+        
+        // ŠIS BIJA TRŪKSTOŠAIS MAINĪGAIS
+        let isDragging = false; 
 
-        window.onload = () => { fetchOrders(); loadBannerData(); setInterval(fetchOrders, 20000); };
+        window.onload = () => { 
+            fetchOrders(); 
+            loadBannerData(); 
+            // Palielinām intervālu līdz 30s, lai vēl vairāk samazinātu konfliktus
+            setInterval(fetchOrders, 30000); 
+        };
 
-        // Kanban vilkšana
+        // KANBAN VILKŠANA
         columns.forEach(status => {
-            new Sortable(document.getElementById(status), {
-                group: 'kanban', animation: 200, draggable: '.order-card', ghostClass: 'sortable-ghost',
+            const colEl = document.getElementById(status);
+            if (!colEl) return;
+
+            new Sortable(colEl, {
+                group: 'kanban', 
+                animation: 200, 
+                draggable: '.order-card', 
+                ghostClass: 'sortable-ghost',
+                // Sākam vilkt - bloķējam auto-atjaunošanos
+                onStart: () => {
+                    isDragging = true;
+                },
                 onEnd: async (evt) => {
                     const id = evt.item.getAttribute('data-id');
                     const newStatus = evt.to.id;
-                    await updateOrderStatus(id, newStatus);
+
+                    if (evt.from === evt.to && evt.oldIndex === evt.newIndex) {
+                        isDragging = false;
+                        return;
+                    }
+
+                    // 1. Vizuāla bloķēšana
+                    evt.item.style.opacity = '0.5';
+                    evt.item.style.pointerEvents = 'none';
+
+                    // 2. Lokālā stāvokļa maiņa (tūlītēja)
+                    const orderIndex = allOrders.findIndex(o => o.id === id);
+                    if (orderIndex !== -1) {
+                        allOrders[orderIndex].statuss = newStatus;
+                    }
+                    updateCounts();
+
+                    try {
+                        const response = await fetch('/api/admin/update-status', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, newStatus })
+                        });
+                        
+                        if (!response.ok) throw new Error();
+                    } catch (e) {
+                        console.error("Kļūda:", e);
+                        fetchOrders(); // Ja kļūda, pārlādējam visu
+                    } finally {
+                        // 3. Atbloķējam
+                        evt.item.style.opacity = '1';
+                        evt.item.style.pointerEvents = 'auto';
+                        // Ļaujam fetchOrders atkal strādāt pēc 2 sekundēm (drošībai)
+                        setTimeout(() => { isDragging = false; }, 2000);
+                    }
                 }
             });
         });
 
         async function fetchOrders() {
+            // Ja lietotājs velk vai tikko pabeidza, neaiztiekam DOM
+            if (isDragging) return; 
+            
             try {
                 const res = await fetch('/api/admin/orders?t=' + Date.now());
                 const data = await res.json();
-                if (lastOrderCount !== 0 && data.length > lastOrderCount) document.getElementById('notificationSound')?.play().catch(()=>{});
+                
+                allOrders = data; 
+                
+                if (lastOrderCount !== 0 && data.length > lastOrderCount) {
+                    document.getElementById('notificationSound')?.play().catch(()=>{});
+                }
                 lastOrderCount = data.length;
-                allOrders = data;
-                handleSearch();
+                
+                handleSearch(); 
                 updateCounts();
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error("Datu ielādes kļūda:", e); 
+            }
         }
 
         function filterByMaster(master) {
@@ -267,24 +329,51 @@
 }
 
         function renderOrders(orders, isSearching = false) {
-            columns.forEach(col => document.getElementById(col).innerHTML = '');
-            const recentContainer = document.getElementById('RecentOrders');
-            const alertsDiv = document.getElementById('recent-alerts');
-            const dismissed = JSON.parse(localStorage.getItem('dismissedOrders') || '[]');
+    // 1. Iztīrām visas kolonnas un paziņojumu joslu
+    columns.forEach(col => {
+        const el = document.getElementById(col);
+        if (el) el.innerHTML = '';
+    });
+    
+    const recentContainer = document.getElementById('RecentOrders');
+    const alertsDiv = document.getElementById('recent-alerts');
+    if (recentContainer) recentContainer.innerHTML = '';
 
-            if (!isSearching) {
-                const recent = allOrders.filter(o => !dismissed.includes(o.id) && o.statuss === 'Saņemts').reverse().slice(0, 3);
-                if (recent.length > 0) {
-                    alertsDiv.classList.remove('hidden'); recentContainer.innerHTML = '';
-                    recent.forEach(o => recentContainer.insertAdjacentHTML('beforeend', createCardHtml(o, true)));
-                } else alertsDiv.classList.add('hidden');
-            } else alertsDiv.classList.add('hidden');
+    const dismissed = JSON.parse(localStorage.getItem('dismissedOrders') || '[]');
+    let alreadyRenderedIds = new Set();
 
-            orders.forEach(o => {
-                const col = document.getElementById(o.statuss);
-                if (col) col.insertAdjacentHTML('beforeend', createCardHtml(o, false));
+    // 2. Apstrādājam "Jaunos pieteikumus" (sarkanā josla augšā)
+    // Rādām tos tikai tad, ja NAV meklēšanas režīms
+    if (!isSearching) {
+        const recent = allOrders.filter(o => 
+            !dismissed.includes(o.id) && 
+            o.statuss === 'Saņemts'
+        ).reverse().slice(0, 3);
+
+        if (recent.length > 0) {
+            alertsDiv.classList.remove('hidden');
+            recent.forEach(o => {
+                recentContainer.insertAdjacentHTML('beforeend', createCardHtml(o, true));
+                alreadyRenderedIds.add(o.id); // Atzīmējam, ka šis jau ir uzzīmēts
             });
+        } else {
+            alertsDiv.classList.add('hidden');
         }
+    } else {
+        alertsDiv.classList.add('hidden');
+    }
+
+    // 3. Zīmējam visas pārējās kartītes kolonnās
+    orders.forEach(o => {
+        // Ja pieteikums jau ir uzzīmēts augšējā joslā, izlaižam to kolonnā
+        if (alreadyRenderedIds.has(o.id)) return;
+
+        const col = document.getElementById(o.statuss);
+        if (col) {
+            col.insertAdjacentHTML('beforeend', createCardHtml(o, false));
+        }
+    });
+}
 
         function dismissNew(id) {
     let dismissed = JSON.parse(localStorage.getItem('dismissedOrders') || '[]');
@@ -323,8 +412,18 @@
             </div>
             
             <div class="mt-auto pt-3 flex justify-between items-center">
-                <div class="text-[8px] font-black text-slate-300 uppercase tracking-widest">
-                    #${order.id.slice(-4)}
+                <div class="flex items-center gap-3">
+                    <div class="text-[8px] font-black text-slate-300 uppercase tracking-widest">
+                        #${order.id.slice(-4)}
+                    </div>
+                    
+                    <button onclick="event.stopPropagation(); openWhatsApp('${order.vards}', '${order.talrunis}', '${order.pakalpojums}', '${order.statuss}')" 
+                            class="text-green-500 hover:text-green-600 transition-transform hover:scale-110 p-1"
+                            title="Sūtīt WhatsApp ziņu">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                    </button>
                 </div>
                 
                 <div class="master-badge ring-4 ring-white" style="background-color: ${mCol}">
@@ -416,14 +515,27 @@
         }
 
         async function updateOrderStatus(id, newStatus) {
-            const order = allOrders.find(o => o.id === id);
-            if(order) order.statuss = newStatus;
-            updateCounts();
-            await fetch('/api/admin/update-status', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, newStatus })
-            });
-        }
+    // Atjaunojam lokāli, lai novērstu "lēkāšanu" atpakaļ
+    const order = allOrders.find(o => o.id === id);
+    if (order) {
+        order.statuss = newStatus;
+        updateCounts();
+    }
+
+    try {
+        const response = await fetch('/api/admin/update-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, newStatus })
+        });
+        
+        if (!response.ok) throw new Error('Servera kļūda');
+    } catch (e) {
+        console.error("Neizdevās saglabāt statusu:", e);
+        // Ja neizdevās saglabāt, pārlādējam datus no servera, lai atjaunotu patieso stāvokli
+        fetchOrders();
+    }
+}
 
         function handleSearch() {
     const q = document.getElementById('searchInput').value.toLowerCase();
@@ -515,6 +627,31 @@
         console.error("Saziņas kļūda:", error);
         alert("Neizdevās sazināties ar serveri. Pārbaudi vai terminālī nav kļūdu!");
     }
+}
+
+function openWhatsApp(vards, talrunis, pakalpojums, statuss) {
+    // 1. Sagatavojam numuru
+    let phone = talrunis.toString().replace(/\D/g, '');
+    if (phone.startsWith('2') && phone.length === 8) phone = '371' + phone;
+
+    // 2. Drošības pēc pārveidojam statusu uz mazajiem burtiem, lai vieglāk salīdzināt
+    const s = statuss ? statuss.toLowerCase() : '';
+    
+    let message = "";
+
+    // 3. Pārbaudām statusus (pielāgo šos vārdus savām kolonnām)
+    if (s === 'gatavs') {
+        message = `Labdien, ${vards}! *ARCUS* serviss informē: Jūsu ierīce (${pakalpojums}) ir saremontēta un gaida Jūs!`;
+    } 
+    else if (s === 'remontā' || s === 'remonts') {
+        message = `Labdien, ${vards}! *ARCUS* serviss informē: Jūsu ierīce (${pakalpojums}) šobrīd tiek remontēta.`;
+    } 
+    else {
+        // Šī ziņa aizies visos citos gadījumos (Saņemts, Jauns, utt.)
+        message = `Labdien, ${vards}! *ARCUS* serviss informē: Jūsu pieteikums (${pakalpojums}) ir saņemts un pieņemts rindā.`;
+    }
+
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
 }
 
     </script>
