@@ -89,6 +89,32 @@
                 <h2 class="text-xs font-black uppercase tracking-widest text-red-600 italic">Jauni pieteikumi</h2>
             </div>
             <div id="RecentOrders" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="md:col-span-2 bg-white p-4 rounded-[24px] border border-slate-200 flex items-center justify-around">
+        <div class="text-center">
+            <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Šodien</div>
+            <div id="stats-today" class="text-xl font-black text-red-600">0</div>
+        </div>
+        <div class="w-px h-8 bg-slate-100"></div>
+        <div class="text-center">
+            <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Aktīvie</div>
+            <div id="stats-active" class="text-xl font-black text-slate-900">0</div>
+        </div>
+        <div class="w-px h-8 bg-slate-100"></div>
+        <div class="text-center">
+            <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Pabeigti</div>
+            <div id="stats-done" class="text-xl font-black text-green-600">0</div>
+        </div>
+    </div>
+
+    <div class="relative">
+        <input type="text" id="searchInput" oninput="handleSearch()" 
+               placeholder="Meklēt klientu vai tel..." 
+               class="w-full h-full bg-white border border-slate-200 rounded-[24px] px-6 py-4 text-sm outline-none focus:border-red-600 transition-all shadow-sm">
+        <span class="absolute right-5 top-1/2 -translate-y-1/2 opacity-30">🔍</span>
+    </div>
+</div>
+			
         </div>
 
         <div class="kanban-container flex flex-row gap-6 overflow-x-auto pb-10">
@@ -235,13 +261,49 @@
             } catch (e) { console.error("Datu kļūda:", e); }
         }
 
-        function updateCounts() {
-            columns.forEach(col => {
-                const count = allOrders.filter(o => o.statuss === col).length;
-                const countEl = document.getElementById(`count-${col}`);
-                if(countEl) countEl.innerText = count;
-            });
-        }
+        // Atjaunotā statistikas un skaita funkcija
+function updateCounts() {
+    let activeCount = 0;
+    let doneCount = 0;
+    let todayCount = 0;
+    const todayStr = new Date().toLocaleDateString('lv-LV');
+
+    columns.forEach(col => {
+        const count = allOrders.filter(o => o.statuss === col).length;
+        const countEl = document.getElementById(`count-${col}`);
+        if(countEl) countEl.innerText = count;
+        
+        if(col === 'Gatavs') doneCount += count;
+        else activeCount += count;
+    });
+
+    // Saskaitām šodienas pieteikumus
+    allOrders.forEach(o => {
+        if(o.datums && o.datums.includes(todayStr)) todayCount++;
+    });
+
+    document.getElementById('stats-today').innerText = todayCount;
+    document.getElementById('stats-active').innerText = activeCount;
+    document.getElementById('stats-done').innerText = doneCount;
+}
+
+// Meklēšanas funkcija
+function handleSearch() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    
+    if (query === "") {
+        renderOrders(allOrders);
+        return;
+    }
+
+    const filtered = allOrders.filter(o => 
+        o.vards.toLowerCase().includes(query) || 
+        o.talrunis.includes(query) ||
+        (o.epasts && o.epasts.toLowerCase().includes(query))
+    );
+    
+    renderOrders(filtered);
+}
 
         function renderOrders(orders) {
             columns.forEach(col => document.getElementById(col).innerHTML = '');
